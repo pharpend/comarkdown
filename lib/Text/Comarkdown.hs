@@ -33,7 +33,7 @@ import Data.Yaml
 -- |A document is many 'DocumentPart's
 type Document = Vector DocumentPart
 
--- |There are three possible objects:
+-- |There are a few possible objects:
 -- 
 -- 1. ordinary markdown text, represented as an 'MDPart',
 -- 2. the definition of a 'Defn',
@@ -56,9 +56,9 @@ data DocumentPart
 -- 2. a mixin, or
 -- 3. an environment.
 data Defn
-  = Function
+  = Environment
+  | Function
   | Mixin
-  | Environment
   deriving (Eq, Show)
 
 -- |A sum type for the markdown parts
