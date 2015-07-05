@@ -31,6 +31,10 @@ library
   hs-source-dirs:      lib
   build-depends:
       base ==4.8.*
+    , blaze-html
+    , bytestring
+    , parsec
+    , text
   exposed-modules:
     Text.Comarkdown
 
