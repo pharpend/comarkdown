@@ -19,19 +19,52 @@
 -- Maintainer  : Peter Harpending <peter@harpending.org>
 -- Stability   : experimental
 -- Portability : portable
+-- 
+-- Comarkdown is a superset of markdown, with support for things like
+-- macros and environments.
 
 module Text.Comarkdown where
 
 import Data.Map (Map)
 import Data.Text (Text)
 import Data.Vector (Vector)
+import Data.Yaml
 
--- |A document is a list of 'DocumentPart's
+-- |A document is many 'DocumentPart's
 type Document = Vector DocumentPart
 
--- |A sum type for the document parts
+-- |There are three possible objects:
+-- 
+-- 1. ordinary markdown text, represented as an 'MDPart',
+-- 2. the definition of a 'Defn',
+-- 3. the application of a 'Defn',
+-- 4. a YAML block containing some metadata,
+-- 5. importing data from another file,
+-- 6. embedding content from another file.
 data DocumentPart
-  =
+  = Application Defn
+  | Definition Defn
+  | Embed FilePath
+  | Import FilePath
+  | Markdown MDPart
+  | Metadata Value
+  deriving (Eq, Show)
+  
+-- |A definition. This can be
+-- 
+-- 1. a function,
+-- 2. a mixin, or
+-- 3. an environment.
+data Defn
+  = Function
+  | Mixin
+  | Environment
+  deriving (Eq, Show)
+
+-- |A sum type for the markdown parts
+data MDPart
+  = Bold Text
+  |
     -- |These correspond to @\<h1\>@, @\<h2\>@, etc in HTML and to
     -- @\\chapter@, @\\section@, @\\subsection@, @\\subsubsection@, and
     -- @\\paragraph@ in LaTeX (respectively).
@@ -40,6 +73,7 @@ data DocumentPart
   | Header3 Text
   | Header4 Text
   | Header5 Text
+  | Italic Text
   |
     -- |@\<ol\>@ in HTML, or @enumerate@ in LaTeX
     ListOrdered (Vector Document)
