@@ -10,8 +10,8 @@ description:
   .
   * It's very difficult to convert LaTeX to HTML.
   .
-  So this is a brand new markup language. It's based off of Markdown's
-  syntax, but it has something equivalent to LaTeX's macros and environments.
+  So this is a brand new markup language. It's based off of Markdown's syntax,
+  but it has something equivalent to LaTeX's macros and environments.
 homepage:             https://github.com/pharpend/comarkdown
 bug-reports:          https://github.com/pharpend/comarkdown/issues
 license:              GPL-3
