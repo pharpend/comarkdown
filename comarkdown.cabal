@@ -1,6 +1,6 @@
-name:                 wwwtex
+name:                 comarkdown
 version:              0.1.0.0
-synopsis:             A markup language for writing math.
+synopsis:             Because normal markdown isn't expressive enough.
 description:         
   I am the author of a math textbook, <http://www.learnyou.org LYSA>. I
   unfortunately have to publish my math textbook as a PDF, rather than a more
@@ -12,13 +12,8 @@ description:
   .
   So this is a brand new markup language. It's based off of Markdown's
   syntax, but it has something equivalent to LaTeX's macros and environments.
-  .
-  I hate the name WWWTeX, so anyone is welcome to chip in name suggestions.
-  .
-  Other contributions are of course welcome, but especially name suggestions.
-    
-homepage:             https://github.com/pharpend/wwwtex
-bug-reports:          https://github.com/pharpend/wwwtex/issues
+homepage:             https://github.com/pharpend/comarkdown
+bug-reports:          https://github.com/pharpend/comarkdown/issues
 license:              GPL-3
 license-file:         LICENSE
 author:               Peter Harpending
@@ -38,4 +33,4 @@ library
 
 source-repository head
   type:                 git
-  location:             https://github.com/pharpend/wwwtex.git
+  location:             https://github.com/pharpend/comarkdown.git

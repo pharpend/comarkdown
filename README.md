@@ -1,6 +1,4 @@
-# wwwtex
-
-By the way, if anyone can come up with a better name, do let me know.
+# comarkdown
 
 This is a markup language specifically for writing portable,
 Unicode-friendly math documents.
@@ -26,11 +24,11 @@ There's also the problem where LaTeX was written eight years before the
 Unicode standard was published, so it's very hard to write LaTeX in
 non-Latin alphabets.
 
-WWWTeX aims to fix all of this. It's a markup language that has simple,
+Comarkdown aims to fix all of this. It's a markup language that has simple,
 intuitive syntax like Markdown, but allows for more complicated
 constructs, such as environments, mixins, and macros.
 
-The WWWTeX standard and/or parser have not been written yet, so this is
+The Comarkdown standard and/or parser have not been written yet, so this is
 purely fantasy at the moment.
 
 This project will hopefully become a usable, portable markup language,
@@ -53,4 +51,4 @@ to anything else.
 [2]: http://www.mathjax.org/
 [3]: http://www.latex-project.org/
 [4]: http://www.learnyou.org/
-[5]: https://github.com/pharpend/wwwtex/issues
+[5]: https://github.com/pharpend/comarkdown/issues
