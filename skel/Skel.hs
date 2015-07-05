@@ -16,9 +16,9 @@
 -- Description : Short description
 -- Copyright   : Copyright 2015 Peter Harpending.
 -- License     : GPL-3
--- Maintainer  : Peter Harpending <peter@harpending.org>
+-- Maintainer  : peter@harpending.org
 -- Stability   : experimental
--- Portability : POSIX
+-- Portability : portable
 -- 
 -- Here is a longer description of this module, containing some
 -- commentary with @some markup@.
