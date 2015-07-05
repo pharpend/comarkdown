@@ -22,3 +22,32 @@
 
 module Text.Comarkdown where
 
+import Data.Map (Map)
+import Data.Text (Text)
+import Data.Vector (Vector)
+
+-- |A document is a list of 'DocumentPart's
+type Document = Vector DocumentPart
+
+-- |A sum type for the document parts
+data DocumentPart
+  =
+    -- |These correspond to @\<h1\>@, @\<h2\>@, etc in HTML and to
+    -- @\\chapter@, @\\section@, @\\subsection@, @\\subsubsection@, and
+    -- @\\paragraph@ in LaTeX (respectively).
+    Header1 Text
+  | Header2 Text
+  | Header3 Text
+  | Header4 Text
+  | Header5 Text
+  |
+    -- |@\<ol\>@ in HTML, or @enumerate@ in LaTeX
+    ListOrdered (Vector Document)
+  |
+    -- |@\<ul\>@ in HTML, or @itemize@ in LaTeX
+    ListUnordered (Vector Document)
+  |
+    -- |@\<dl\>@ in HTML, or @description@ in LaTeX
+    ListKeyValue (Map Text Document)
+  | Paragraph Text
+  deriving (Eq,Show)
