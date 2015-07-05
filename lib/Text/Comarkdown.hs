@@ -42,8 +42,8 @@ type Document = Vector DocumentPart
 -- 5. importing data from another file,
 -- 6. embedding content from another file.
 data DocumentPart
-  = Application Defn
-  | Definition Defn
+  = Apply Defn
+  | Define Defn
   | Embed FilePath
   | Import FilePath
   | Markdown MDPart
