@@ -1,7 +1,7 @@
 name:                 wwwtex
 version:              0.1.0.0
 synopsis:             A markup language for writing math.
-description:
+description:         
   I am the author of a math textbook, <http://www.learnyou.org LYSA>. I
   unfortunately have to publish my math textbook as a PDF, rather than a more
   convenient online thing. This is because
@@ -16,7 +16,7 @@ description:
   I hate the name WWWTeX, so anyone is welcome to chip in name suggestions.
   .
   Other contributions are of course welcome, but especially name suggestions.
-
+    
 homepage:             https://github.com/pharpend/wwwtex
 bug-reports:          https://github.com/pharpend/wwwtex/issues
 license:              GPL-3
@@ -27,7 +27,7 @@ copyright:            Copyright 2015 Peter Harpending
 category:             Text
 build-type:           Simple
 cabal-version:        >=1.10
-extra-source-files:
+extra-source-files:  
   README.md
   LICENSE
 
