@@ -32,11 +32,10 @@ library
   ghc-options:         -Wall
   build-depends:
       base ==4.8.*
-    , bytestring
     , containers
-    , parsec
     , text
     , vector
+    , yaml
   exposed-modules:
     Text.Comarkdown
 
