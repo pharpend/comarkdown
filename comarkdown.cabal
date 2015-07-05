@@ -29,12 +29,14 @@ extra-source-files:
 library
   default-language:    Haskell2010
   hs-source-dirs:      lib
+  ghc-options:         -Wall
   build-depends:
       base ==4.8.*
-    , blaze-html
     , bytestring
+    , containers
     , parsec
     , text
+    , vector
   exposed-modules:
     Text.Comarkdown
 
