@@ -166,12 +166,30 @@ atxHeader6 =
 setextHeader1 :: Spec
 setextHeader1 =
   context "Header1" $
-  specify "An arbitrary non-empty, non-double-breaking string, which does not contain any '='s, followed by a row of '='s should be an h1" $
-  property $
-  \(Setext1 s) ->
-    do parseResult <-
-         parse "test" (mappend s "\n====")
-       parseResult `shouldBe` Right [Markdown (Header1 s)]
+  do specify "A Setext1-compliant header followed by a row of '='s should be an h1" $
+       property $
+       \(Setext1NE s,Peano i) ->
+         do let testInput =
+                  mconcat [s,"\n",T.pack (replicate i '=')]
+            parseResult <- parse "test" testInput
+            parseResult `shouldBe` Right [Markdown (Header1 s)]
+     specify "1 or more '='s ++ 1 or more non-breaking characters should be paragraph text" $
+       property $
+       \(Peano i,NonBreaking t) ->
+         do let testInput = mappend (T.pack (replicate i '=')) t
+            parseResult <- parse "test" testInput
+            parseResult `shouldBe` Right [Markdown (Paragraph testInput)]
+     specify "optional Setext1-compliant header ++ newline if nonempty header ++ 1 or more '='s ++ 1 or more non-breaming characters should be paragraph text" $
+       property $
+       \(Setext1 s,Peano i,NonBreaking t) ->
+         do let testInput =
+                  mconcat [if T.null s
+                              then mempty
+                              else mappend s "\n"
+                          ,T.pack (replicate i '=')
+                          ,t]
+            parseResult <- parse "test" testInput
+            parseResult `shouldBe` Right [Markdown (Paragraph testInput)]
 
 -- |Parsing of bare 'Header2's using the following syntax:
 -- 
@@ -180,4 +198,9 @@ setextHeader1 =
 setextHeader2 :: Spec
 setextHeader2 = 
   context "Header2" $
-    return ()
+  do specify "A Setext2-compliant header followed by a row of '-'s should be an h2" $
+       property $
+       \(Setext2NE s,Peano i) ->
+         do let testInput = mconcat [s, "\n", T.pack (replicate i '-')]
+            parseResult <- parse "test" testInput
+            parseResult `shouldBe` Right [Markdown (Header1 s)]
