@@ -1,4 +1,4 @@
-{-# LANGUAGE Trustworthy #-}
+{-# LANGUAGE Safe #-}
 
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -24,66 +24,47 @@
 -- 
 -- Comarkdown is a superset of markdown, with support for things like macros and
 -- environments.
-
-module Text.Comarkdown where
-
-import Data.Map (Map)
-import Data.Text (Text)
-import Data.Vector (Vector)
-import Data.Yaml
-
--- |A document is many 'DocumentPart's
-type Document = Vector DocumentPart
-
--- |There are a few possible objects:
 -- 
--- 1. ordinary markdown text, represented as an 'MDPart',
--- 2. the definition of a 'Defn',
--- 3. the application of a 'Defn',
--- 4. a YAML block containing some metadata,
--- 5. importing data from another file,
--- 6. embedding content from another file.
-data DocumentPart
-  = Apply Defn
-  | Define Defn
-  | Embed FilePath
-  | Import FilePath
-  | Markdown MDPart
-  | Metadata Value
-  deriving (Eq, Show)
-  
--- |A definition. This can be
+-- * How to use this library
 -- 
--- 1. a function,
--- 2. a mixin, or
--- 3. an environment.
-data Defn
-  = Environment
-  | Function
-  | Mixin
-  deriving (Eq, Show)
+-- > import Text.Comarkdown
+-- 
+-- * Pitfalls
+-- 
+-- This library uses the less popular
+-- <https://hackage.haskell.org/package/parsec Parsec> library for parsing. Most
+-- libraries nowadays use <https://hackage.haskell.org/package/attoparsec
+-- attoparsec>.
+-- 
+-- So, why does this library use Parsec instead?
+-- 
+-- Essentially, there's a tradeoff: attoparsec is considerably faster, but at
+-- the cost of error message quality. Parsec is slower, but it keeps track of
+-- the state of the parser as it's going along, and therefore the error messages
+-- are better. 
+-- 
+-- Since compiling Comarkdown _can_ have errors, it's important that the user
+-- can comprehend the parser errors. Therefore, I went with Parsec instead of
+-- attoparsec.
 
--- |A sum type for the markdown parts
-data MDPart
-  = Bold Text
-  |
-    -- |These correspond to @\<h1\>@, @\<h2\>@, etc in HTML and to
-    -- @\\chapter@, @\\section@, @\\subsection@, @\\subsubsection@, and
-    -- @\\paragraph@ in LaTeX (respectively).
-    Header1 Text
-  | Header2 Text
-  | Header3 Text
-  | Header4 Text
-  | Header5 Text
-  | Italic Text
-  |
-    -- |@\<ol\>@ in HTML, or @enumerate@ in LaTeX
-    ListOrdered (Vector Document)
-  |
-    -- |@\<ul\>@ in HTML, or @itemize@ in LaTeX
-    ListUnordered (Vector Document)
-  |
-    -- |@\<dl\>@ in HTML, or @description@ in LaTeX
-    ListKeyValue (Map Text Document)
-  | Paragraph Text
-  deriving (Eq,Show)
+module Text.Comarkdown 
+  ( -- ** Parsing
+    Parser
+  , DocumentState
+  , parse
+  , parseEither
+  , parseEither'
+  , parseFile
+  , parseFileEither
+  , parseFileEither'
+  , comarkdownParser
+    -- ** Types
+  , Document
+  , DocumentPart(..)
+  , Defn(..)
+  , MDPart(..)
+  )
+  where
+
+import Text.Comarkdown.Parser
+import Text.Comarkdown.Types
