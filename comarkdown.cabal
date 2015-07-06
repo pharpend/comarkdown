@@ -58,6 +58,10 @@ test-suite spec
   hs-source-dirs:      spec
   main-is:             Spec.hs
   ghc-options:         -Wall -threaded
+  other-extensions:
+    OverloadedLists
+    OverloadedStrings
+    Trustworthy
   build-depends:
       base
     , comarkdown
