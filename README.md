@@ -34,6 +34,41 @@ purely fantasy at the moment.
 This project will hopefully become a usable, portable markup language,
 along with a thorough standard.
 
+## Installation and Usage
+
+### Installation
+
+I haven't published a version yet, but you can build the development
+version if you want. You need [Git][6], and [Stack][8].
+
+    $ git clone git://github.com/pharpend/comarkdown.git
+    $ cd comarkdown
+    $ stack install
+
+Using the old `cabal install` probably works, although I haven't tested
+it.
+
+You can run the test suite with `stack test`.
+
+### Usage
+
+The `comd` executable doesn't actually do anything yet, but here you go
+nonetheless:
+
+```
+Usage: comd --version
+  Compiler for Comarkdown
+
+Available options:
+  -h,--help                Show this help text
+  --version                Show the version
+```
+
+### Using the Haskell library
+
+I haven't put a version on Hackage, so there's no Haddock documentation
+anywhere. **But**, you can read the source files found in [lib/Text/Comarkdown/]
+
 ## Inspiration
 
 I am writing a math textbook, called
@@ -52,3 +87,6 @@ to anything else.
 [3]: http://www.latex-project.org/
 [4]: http://www.learnyou.org/
 [5]: https://github.com/pharpend/comarkdown/issues
+[6]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+[7]: https://github.com/bitemyapp/learnhaskell/blob/master/install.md
+[8]: https://github.com/commercialhaskell/stack/wiki/Downloads
