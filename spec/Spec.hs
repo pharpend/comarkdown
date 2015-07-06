@@ -26,6 +26,7 @@
 
 module Main where
 
+import Data.ByteString.Lazy (ByteString)
 import Text.Comarkdown
 import Test.Hspec
 
@@ -33,30 +34,36 @@ main :: IO ()
 main =
   hspec $ context "Parsing" $ context "Recognizing bare headers" $ header1Tests
 
-header1Tests :: SpecWith ()
+header1Tests :: Spec
 header1Tests =
   context "Header1" $
-  do specify "'# something' should be an h1"
-             (shouldBe (parseEither "# something")
-                       (Right [(Markdown (Header1 "something"))]))
-     specify "'something\\n====' should be an h1"
-             (shouldBe (parseEither "something\n====")
-                       (Right [(Markdown (Header1 "something"))]))
-     specify "'something\\n====' should be an h1"
-             (shouldBe (parseEither "something\n====")
-                       (Right [(Markdown (Header1 "something"))]))
-     specify "'something\\n=' should be an H1"
-             (shouldBe (parseEither "something\n=")
-                       (Right [(Markdown (Header1 "something"))]))
-     specify "'# something\\n====' should be an h1 with the '='s as part of the header"
-             (shouldBe (parseEither "# something\n====")
-                       (Right [(Markdown (Header1 "something ===="))]))
-     specify "'# something #' should be an h1"
-             (shouldBe (parseEither "# something #")
-                       (Right [(Markdown (Header1 "something"))]))
-     specify "'# something ####' should be an h1"
-             (shouldBe (parseEither "# something ####")
-                       (Right [(Markdown (Header1 "something"))]))
-     specify "'# something' with trailing spaces should be an h1"
-             (shouldBe (parseEither "# something                       ")
-                       (Right [(Markdown (Header1 "something"))]))
+  do runParseTest "'# something' should be an h1"
+                  "# something"
+                  (Right [Markdown (Header1 "something")])
+     runParseTest "'something\\n====' should be an h1"
+                  "something\n===="
+                  (Right [Markdown (Header1 "something")])
+     runParseTest "'something\\n====' should be an h1"
+                  "something\n===="
+                  (Right [Markdown (Header1 "something")])
+     runParseTest "'something\\n=' should be an H1"
+                  "something\n="
+                  (Right [Markdown (Header1 "something")])
+     runParseTest "'# something\\n====' should be an h1 with the '='s as part of the header"
+                  "# something\n===="
+                  (Right [Markdown (Header1 "something ====")])
+     runParseTest "'# something #' should be an h1"
+                  "# something #"
+                  (Right [Markdown (Header1 "something")])
+     runParseTest "'# something ####' should be an h1"
+                  "# something ####"
+                  (Right [Markdown (Header1 "something")])
+     runParseTest "'# something' with trailing spaces should be an h1"
+                  "# something                       "
+                  (Right [Markdown (Header1 "something")])
+
+runParseTest :: String -> ByteString -> Either String Document -> Spec
+runParseTest spec bs supposedResult =
+  it spec $
+  do res <- runIO $ parse "test input" bs
+     res `shouldBe` supposedResult
