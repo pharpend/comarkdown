@@ -32,8 +32,8 @@ library
   ghc-options:         -Wall
   other-extensions:
     OverloadedStrings
+    LambdaCase
     Trustworthy
-    Safe
   build-depends:
       base ==4.8.*
     , bytestring
