@@ -68,6 +68,9 @@ test-suite spec
     OverloadedLists
     OverloadedStrings
     Trustworthy
+  other-modules:
+    Helper
+    HeaderSpec
   build-depends:
       base
     , comarkdown
