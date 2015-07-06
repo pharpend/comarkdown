@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE LambdaCase #-}
 
 -- This program is free software: you can redistribute it and/or modify it under
 -- the terms of the GNU General Public License as published by the Free Software
@@ -30,43 +30,71 @@
 
 module Text.Comarkdown.Parser where
 
-import Data.ByteString (ByteString)
+import qualified Data.ByteString as BS
+import Data.ByteString.Lazy (ByteString)
+import qualified Data.ByteString.Lazy as BL
 import Text.Comarkdown.Types
 import Text.Parsec hiding (parse)
-import qualified Text.Parsec as P
 
 -- |A shortcut type for parsers
-type Parser = Parsec ByteString DocumentState
+-- 
+-- Since: 0.1.0.0
+type Parser = ParsecT ByteString DocumentState IO
 
 -- |In the future, we'll have a richer state, but for now...
+-- 
+-- Since: 0.1.0.0
 type DocumentState = ()
 
--- |Parse a comarkdown document
-parse :: ByteString -> Maybe Document
-parse = undefined
-
 -- |Parse a comarkdown document, returning an error message on a parse failure.
-parseEither :: ByteString -> Either String Document
-parseEither = undefined
+-- 
+-- I'll save you a click: 'SourceName' is a semantic alias for 'String'
+-- 
+-- Since: 0.1.0.0
+parse :: SourceName -> ByteString -> IO (Either String Document)
+parse sn =
+  parse' sn >>$
+  \case
+    Left x -> Left (show x)
+    Right x -> Right x
 
 -- |Parse a comarkdown document, returning a 'ParseError' on a parse failure.
-parseEither' :: ByteString -> Either ParseError Document
-parseEither' = undefined
-
--- |Parse a comarkdown document from a file
-parseFile :: FilePath -> Maybe Document
-parseFile = undefined
+-- 
+-- Since: 0.1.0.0
+parse' :: SourceName -> ByteString -> IO (Either ParseError Document)
+parse' sn bs = runParserT comarkdownParser () sn bs
 
 -- |Parse a comarkdown document from a file, returning an error message on a
 -- parse failure.
-parseFileEither :: FilePath -> Either String Document
-parseFileEither = undefined
+-- 
+-- Since: 0.1.0.0
+parseFile :: FilePath -> IO (Either String Document)
+parseFile =
+  parseFile' >>$
+  \case
+    Left x -> Left (show x)
+    Right x -> Right x
 
 -- |Parse a comarkdown document from a file, returning a 'ParseError' on a parse
 -- failure.
-parseFileEither' :: FilePath -> Either ParseError Document
-parseFileEither' = undefined
+-- 
+-- Since: 0.1.0.0
+parseFile' :: FilePath -> IO (Either ParseError Document)
+parseFile' fp =
+  do fileBytes <- BS.readFile fp
+     let lazyFileBytes = BL.fromStrict fileBytes
+     parse' fp lazyFileBytes
 
 -- |The Parsec 'Parser' for Comarkdown 'Document's
+-- 
+-- Since: 0.1.0.0
 comarkdownParser :: Parser Document
 comarkdownParser = undefined
+
+-- |Convenience function. It's essentially like '(>=>)', but with a pure
+-- function as the second argument
+-- 
+-- Since: 0.1.0.0
+(>>$) :: Monad m => (a -> m b) -> (b -> c) -> a -> m c
+(>>$) monadAction mapper monadVal =
+  fmap mapper (monadAction monadVal)
