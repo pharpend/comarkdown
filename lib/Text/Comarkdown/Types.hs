@@ -63,24 +63,19 @@ data Defn
 -- |A sum type for the markdown parts
 data MDPart
   = Bold Text
-  |
-    -- |These correspond to @\<h1\>@, @\<h2\>@, etc in HTML and to
-    -- @\\chapter@, @\\section@, @\\subsection@, @\\subsubsection@, and
-    -- @\\paragraph@ in LaTeX (respectively).
+  | -- |These correspond to @\<h1\>@, @\<h2\>@, etc in HTML
     Header1 Text
   | Header2 Text
   | Header3 Text
   | Header4 Text
   | Header5 Text
+  | Header6 Text
   | Italic Text
-  |
-    -- |@\<ol\>@ in HTML, or @enumerate@ in LaTeX
+  | -- |@\<ol\>@ in HTML, or @enumerate@ in LaTeX
     ListOrdered (Vector Document)
-  |
-    -- |@\<ul\>@ in HTML, or @itemize@ in LaTeX
+  | -- |@\<ul\>@ in HTML, or @itemize@ in LaTeX
     ListUnordered (Vector Document)
-  |
-    -- |@\<dl\>@ in HTML, or @description@ in LaTeX
+  | -- |@\<dl\>@ in HTML, or @description@ in LaTeX
     ListKeyValue (Map Text Document)
   | Literal Text
   | Paragraph Text
