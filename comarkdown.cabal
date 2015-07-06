@@ -70,10 +70,11 @@ test-suite spec
     Trustworthy
   build-depends:
       base
-    , bytestring
     , comarkdown
     , hspec
 
 source-repository head
+    , QuickCheck
+    , text
   type:                 git
   location:             https://github.com/pharpend/comarkdown.git
