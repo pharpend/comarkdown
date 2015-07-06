@@ -85,7 +85,7 @@ parseFile' fp = T.readFile fp >>= parse' fp
 -- 
 -- Since: 0.1.0.0
 comarkdownParser :: Parser Document
-comarkdownParser = undefined
+comarkdownParser = fail "not implemented"
 
 -- |Convenience function. It's essentially like '(>=>)', but with a pure
 -- function as the second argument
