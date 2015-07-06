@@ -46,9 +46,11 @@ executable comd
   hs-source-dirs:      exe
   main-is:             Main.hs
   ghc-options:         -Wall -threaded
+  other-modules:
+    Paths_comarkdown
   build-depends:
       base
-    , comarkdown
+    , optparse-applicative
 
 test-suite spec
   type:                exitcode-stdio-1.0

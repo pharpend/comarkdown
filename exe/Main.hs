@@ -22,12 +22,22 @@
 
 module Main where
 
+import Data.Version (showVersion)
+import Paths_comarkdown (version)
 import Options.Applicative
 
 main :: IO ()
-main = customExecParser parserPrefs parserInfo
+main =
+  customExecParser parserPrefs parserInfo >>= runArgs
   where parserPrefs =
           ParserPrefs "" True True True 80
         parserInfo =
-          info (helper <*> pure ())
+          info (helper <*> parser)
                (mconcat [fullDesc,progDesc "Compiler for Comarkdown"])
+        parser =
+          flag' Version (mconcat [long "version",help "Show the version"])
+
+data Args = Version
+
+runArgs :: Args -> IO ()
+runArgs Version = putStrLn $ showVersion version
