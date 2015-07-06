@@ -1,6 +1,6 @@
+{-# LANGUAGE OverloadedLists #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE Trustworthy #-}
-
--- -*- hindent-style: "gibiansky" -*-
 
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -26,7 +26,37 @@
 
 module Main where
 
+import Text.Comarkdown
 import Test.Hspec
 
 main :: IO ()
-main = hspec $ return ()
+main =
+  hspec $ context "Parsing" $ context "Recognizing bare headers" $ header1Tests
+
+header1Tests :: SpecWith ()
+header1Tests =
+  context "Header1" $
+  do specify "'# something' should be an h1"
+             (shouldBe (parseEither "# something")
+                       (Right [(Markdown (Header1 "something"))]))
+     specify "'something\\n====' should be an h1"
+             (shouldBe (parseEither "something\n====")
+                       (Right [(Markdown (Header1 "something"))]))
+     specify "'something\\n====' should be an h1"
+             (shouldBe (parseEither "something\n====")
+                       (Right [(Markdown (Header1 "something"))]))
+     specify "'something\\n=' should be an H1"
+             (shouldBe (parseEither "something\n=")
+                       (Right [(Markdown (Header1 "something"))]))
+     specify "'# something\\n====' should be an h1 with the '='s as part of the header"
+             (shouldBe (parseEither "# something\n====")
+                       (Right [(Markdown (Header1 "something ===="))]))
+     specify "'# something #' should be an h1"
+             (shouldBe (parseEither "# something #")
+                       (Right [(Markdown (Header1 "something"))]))
+     specify "'# something ####' should be an h1"
+             (shouldBe (parseEither "# something ####")
+                       (Right [(Markdown (Header1 "something"))]))
+     specify "'# something' with trailing spaces should be an h1"
+             (shouldBe (parseEither "# something                       ")
+                       (Right [(Markdown (Header1 "something"))]))
