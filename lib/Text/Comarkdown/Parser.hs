@@ -30,16 +30,15 @@
 
 module Text.Comarkdown.Parser where
 
-import qualified Data.ByteString as BS
-import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as BL
+import Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy.IO as T
 import Text.Comarkdown.Types
 import Text.Parsec hiding (parse)
 
 -- |A shortcut type for parsers
 -- 
 -- Since: 0.1.0.0
-type Parser = ParsecT ByteString DocumentState IO
+type Parser = ParsecT Text DocumentState IO
 
 -- |In the future, we'll have a richer state, but for now...
 -- 
@@ -51,7 +50,7 @@ type DocumentState = ()
 -- I'll save you a click: 'SourceName' is a semantic alias for 'String'
 -- 
 -- Since: 0.1.0.0
-parse :: SourceName -> ByteString -> IO (Either String Document)
+parse :: SourceName -> Text -> IO (Either String Document)
 parse sn =
   parse' sn >>$
   \case
@@ -61,7 +60,7 @@ parse sn =
 -- |Parse a comarkdown document, returning a 'ParseError' on a parse failure.
 -- 
 -- Since: 0.1.0.0
-parse' :: SourceName -> ByteString -> IO (Either ParseError Document)
+parse' :: SourceName -> Text -> IO (Either ParseError Document)
 parse' sn bs = runParserT comarkdownParser () sn bs
 
 -- |Parse a comarkdown document from a file, returning an error message on a
@@ -80,10 +79,7 @@ parseFile =
 -- 
 -- Since: 0.1.0.0
 parseFile' :: FilePath -> IO (Either ParseError Document)
-parseFile' fp =
-  do fileBytes <- BS.readFile fp
-     let lazyFileBytes = BL.fromStrict fileBytes
-     parse' fp lazyFileBytes
+parseFile' fp = T.readFile fp >>= parse' fp
 
 -- |The Parsec 'Parser' for Comarkdown 'Document's
 -- 

@@ -25,7 +25,7 @@
 module Text.Comarkdown.Types where
 
 import Data.Map (Map)
-import Data.Text (Text)
+import Data.Text.Lazy (Text)
 import Data.Vector (Vector)
 import Data.Yaml
 
