@@ -56,7 +56,7 @@ instance Arbitrary ATX where
   arbitrary =
     fmap ATX $
     suchThat arbitrary $
-    \s -> not $ (T.isInfixOf "\n\n" s || T.isInfixOf "#" s)
+    not . T.isInfixOf "\n\n"
 
 -- |A non-empty 'ATX'.
 newtype ATXNonEmpty =
@@ -68,7 +68,8 @@ instance Arbitrary ATXNonEmpty where
               suchThat arbitrary $
               not . T.null . unATX
 
--- |'Text's without sequential newlines or any '='s
+-- |'Text's without sequential newlines or any lines beginning with a
+-- =. Trailing newlines are also forbidden.
 newtype Setext1 = Setext1 {unSetext1 :: Text}
   deriving (Eq, Show)
 
@@ -76,7 +77,12 @@ instance Arbitrary Setext1 where
   arbitrary =
     fmap Setext1 $
     suchThat arbitrary $
-    \s -> not $ (T.isInfixOf "\n\n" s || T.isInfixOf "=" s)
+    \s ->
+      not $
+      (T.isInfixOf "\n\n" s ||
+       any (T.isPrefixOf "=")
+           (T.lines s) ||
+       T.isSuffixOf "\n" s)
 
 -- |A non-empty 'Setext1'.
 newtype Setext1NonEmpty = Setext1NE {unSetext1NE :: Text}
@@ -88,7 +94,8 @@ instance Arbitrary Setext1NonEmpty where
               not . T.null . unSetext1
 
 
--- |'Text's without sequential newlines or any '-'s
+-- |'Text's without sequential newlines or any lines starting with '-'. Trailing
+-- newlines are also forbidden.
 newtype Setext2 = Setext2 {unSetext2 :: Text}
   deriving (Eq, Show)
 
@@ -96,7 +103,12 @@ instance Arbitrary Setext2 where
   arbitrary =
     fmap Setext2 $
     suchThat arbitrary $
-    \s -> not $ (T.isInfixOf "\n\n" s || T.isInfixOf "-" s)
+    \s ->
+      not $
+      (T.isInfixOf "\n\n" s ||
+       any (T.isPrefixOf "-")
+           (T.lines s) ||
+       T.isSuffixOf "\n" s)
 
 -- |A non-empty 'Setext2'.
 newtype Setext2NonEmpty = Setext2NE {unSetext2NE :: Text}
