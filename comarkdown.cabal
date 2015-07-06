@@ -72,9 +72,9 @@ test-suite spec
       base
     , comarkdown
     , hspec
-
-source-repository head
     , QuickCheck
     , text
+
+source-repository head
   type:                 git
   location:             https://github.com/pharpend/comarkdown.git
