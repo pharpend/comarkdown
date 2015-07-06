@@ -36,7 +36,9 @@ library
     Safe
   build-depends:
       base ==4.8.*
+    , bytestring
     , containers
+    , parsec
     , text
     , vector
     , yaml
