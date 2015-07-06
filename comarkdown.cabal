@@ -31,7 +31,9 @@ library
   hs-source-dirs:      lib
   ghc-options:         -Wall
   other-extensions:
+    OverloadedStrings
     Trustworthy
+    Safe
   build-depends:
       base ==4.8.*
     , containers
