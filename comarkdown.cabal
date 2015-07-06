@@ -1,17 +1,13 @@
 name:                 comarkdown
 version:              0.1.0.0
-synopsis:             Because normal markdown isn't expressive enough.
+synopsis:             Because normal Markdown isn't expressive enough.
 description:         
-  I am the author of a math textbook, <http://www.learnyou.org LYSA>. I
-  unfortunately have to publish my math textbook as a PDF, rather than a more
-  convenient online thing. This is because
+  This is a markup language which is a superset of
+  <https://en.wikipedia.org/wiki/Markdown Markdown>, but allows for functions,
+  mixins, and specialized environments.
   .
-  * No web markup language supports macros
-  .
-  * It's very difficult to convert LaTeX to HTML.
-  .
-  So this is a brand new markup language. It's based off of Markdown's syntax,
-  but it has something equivalent to LaTeX's macros and environments.
+  It is fully UTF-8 compliant, and can in theory be converted into any number of
+  output formats.
 homepage:             https://github.com/pharpend/comarkdown
 bug-reports:          https://github.com/pharpend/comarkdown/issues
 license:              GPL-3
