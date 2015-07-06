@@ -67,7 +67,8 @@ Available options:
 ### Using the Haskell library
 
 I haven't put a version on Hackage, so there's no Haddock documentation
-anywhere. **But**, you can read the source files found in [lib/Text/Comarkdown/]
+anywhere. **But**, you can read the source files found in
+[`lib/Text/Comarkdown/*.hs`](lib/Text/Comarkdown/).
 
 ## Inspiration
 
