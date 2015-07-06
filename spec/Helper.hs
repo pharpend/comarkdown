@@ -127,3 +127,12 @@ newtype HSpace = HSpace {unHSpace :: Text}
 instance Arbitrary HSpace where
   arbitrary = fmap (HSpace . T.pack)
                    (listOf (elements " \t"))
+
+newtype NonBreaking = NonBreaking {unNonBreaking :: Text}
+  deriving (Eq, Show)
+
+instance Arbitrary NonBreaking where
+  arbitrary =
+    fmap NonBreaking $
+    suchThat arbitrary $
+    \x -> not $ T.isInfixOf x "\r\n"
