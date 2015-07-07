@@ -55,7 +55,7 @@ atxHeader1 =
                            ,"++ arbitrary horizontal space"
                            ,"should be an h1 containing the ATX-compliant header"]) $
             property $
-            \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+            \(HSpace s,ATXHeaderTextNE h,HSpace t,Nat k,HSpace u) ->
               do let testInput =
                        mconcat ["#",s,h,t,T.pack (replicate k '#'),u]
                  parseResult <-
@@ -78,7 +78,7 @@ atxHeader2 =
                    ,"++ arbitrary horizontal space"
                    ,"should be an h2 containing the ATX-compliant header"]) $
   property $
-  \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+  \(HSpace s,ATXHeaderTextNE h,HSpace t,Nat k,HSpace u) ->
     do let testInput = mconcat ["##",s,h,t,T.pack (replicate k '#'),u]
        parseResult <- parse "test" testInput
        parseResult `shouldBe` Right [Markdown (Header2 h)]
@@ -97,7 +97,7 @@ atxHeader3 =
                    ,"++ arbitrary horizontal space"
                    ,"should be an h3 containing the ATX-compliant header"]) $
   property $
-  \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+  \(HSpace s,ATXHeaderTextNE h,HSpace t,Nat k,HSpace u) ->
     do let testInput = mconcat ["###",s,h,t,T.pack (replicate k '#'),u]
        parseResult <- parse "test" testInput
        parseResult `shouldBe` Right [Markdown (Header3 h)]
@@ -116,7 +116,7 @@ atxHeader4 =
                    ,"++ arbitrary horizontal space"
                    ,"should be an h4 containing the ATX-compliant header"]) $
   property $
-  \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+  \(HSpace s,ATXHeaderTextNE h,HSpace t,Nat k,HSpace u) ->
     do let testInput = mconcat ["####",s,h,t,T.pack (replicate k '#'),u]
        parseResult <- parse "test" testInput
        parseResult `shouldBe` Right [Markdown (Header4 h)]
@@ -135,7 +135,7 @@ atxHeader5 =
                    ,"++ arbitrary horizontal space"
                    ,"should be an h5 containing the ATX-compliant header"]) $
   property $
-  \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+  \(HSpace s,ATXHeaderTextNE h,HSpace t,Nat k,HSpace u) ->
     do let testInput = mconcat ["#####",s,h,t,T.pack (replicate k '#'),u]
        parseResult <- parse "test" testInput
        parseResult `shouldBe` Right [Markdown (Header5 h)]
@@ -156,7 +156,7 @@ atxHeader6 =
                    ,"++ arbitrary horizontal space"
                    ,"should be an h6 containing the ATX-compliant header"]) $
   property $
-  \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+  \(HSpace s,ATXHeaderTextNE h,HSpace t,Nat k,HSpace u) ->
     do let testInput = mconcat ["######",s,h,t,T.pack (replicate k '#'),u]
        parseResult <- parse "test" testInput
        parseResult `shouldBe` Right [Markdown (Header6 h)]
