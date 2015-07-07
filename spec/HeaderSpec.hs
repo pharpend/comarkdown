@@ -172,8 +172,13 @@ setextHeader1 =
   do specify "A Setext1-compliant header followed by a row of '='s should be an h1" $
        property $
        \(Setext1NE s,Peano i) ->
-         do let testInput =
-                  mconcat [s,"\n",T.pack (replicate i '=')]
+         do let testInput = mconcat [s,"\n",T.pack (replicate i '=')]
+            parseResult <- parse "test" testInput
+            parseResult `shouldBe` Right [Markdown (Header1 s)]
+     specify "A Setext1-compliant header followed by a row of ('='s surrounded by arbitrary whitespace) should be an h1, even if there is whitespace surrounding the entire expression" $
+       property $
+       \(WhiteSpace w,Setext1NE s,WhiteSpace v,Peano i,WhiteSpace x) ->
+         do let testInput = mconcat [w,s,"\n",v,T.pack (replicate i '='),x]
             parseResult <- parse "test" testInput
             parseResult `shouldBe` Right [Markdown (Header1 s)]
      specify "1 or more '='s ++ 1 or more non-breaking characters should be paragraph text" $
