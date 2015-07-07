@@ -18,7 +18,7 @@
 -- |Tests for parsing of Header{1..5} values
 module HeaderSpec where
 
-import Helper
+import TestTypes
 
 import qualified Data.Text.Lazy as T
 import Text.Comarkdown
@@ -48,11 +48,11 @@ atxHeader1 :: Spec
 atxHeader1 =
   do context "Header1" $
        do specify (unwords ["A single '#'"
-                           ,"++ a non-zero number of spaces"
+                           ,"++ arbitrary horizontal space"
                            ,"++ a non-empty ATX-compliant header"
-                           ,"++ an arbitrary number of spaces"
-                           ,"++ an arbitrary number of '#'s"
-                           ,"++ an arbitrary number of spaces"
+                           ,"++ arbitrary horizontal space"
+                           ,"++ zero or more '#'s"
+                           ,"++ arbitrary horizontal space"
                            ,"should be an h1 containing the ATX-compliant header"]) $
             property $
             \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
@@ -71,11 +71,11 @@ atxHeader2 :: Spec
 atxHeader2 =
   context "Header2" $
   specify (unwords ["Two '#'s"
-                   ,"++ a non-zero number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ a non-empty ATX-compliant header"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ an arbitrary number of '#'s"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"should be an h2 containing the ATX-compliant header"]) $
   property $
   \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
@@ -90,11 +90,11 @@ atxHeader3 :: Spec
 atxHeader3 =
   context "Header3" $
   specify (unwords ["Three '#'s"
-                   ,"++ a non-zero number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ a non-empty ATX-compliant header"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ an arbitrary number of '#'s"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"should be an h3 containing the ATX-compliant header"]) $
   property $
   \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
@@ -109,11 +109,11 @@ atxHeader4 :: Spec
 atxHeader4 = 
   context "Header4" $
   specify (unwords ["Four '#'s"
-                   ,"++ a non-zero number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ a non-empty ATX-compliant header"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ an arbitrary number of '#'s"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"should be an h4 containing the ATX-compliant header"]) $
   property $
   \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
@@ -128,11 +128,11 @@ atxHeader5 :: Spec
 atxHeader5 =
   context "Header5" $
   specify (unwords ["Five '#'s"
-                   ,"++ a non-zero number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ a non-empty ATX-compliant header"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ an arbitrary number of '#'s"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"should be an h5 containing the ATX-compliant header"]) $
   property $
   \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
@@ -149,11 +149,11 @@ atxHeader6 :: Spec
 atxHeader6 =
   context "Header6" $
   specify (unwords ["Six '#'s"
-                   ,"++ a non-zero number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ a non-empty ATX-compliant header"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"++ an arbitrary number of '#'s"
-                   ,"++ an arbitrary number of spaces"
+                   ,"++ arbitrary horizontal space"
                    ,"should be an h6 containing the ATX-compliant header"]) $
   property $
   \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->

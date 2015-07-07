@@ -64,8 +64,12 @@ test-suite spec
     OverloadedStrings
     Trustworthy
   other-modules:
-    Helper
     HeaderSpec
+    TestTypes
+    TestTypes.Header.ATX
+    TestTypes.Header.Setext
+    TestTypes.Numeric
+    TestTypes.Text
   build-depends:
       base
     , comarkdown
