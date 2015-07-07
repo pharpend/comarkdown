@@ -48,7 +48,7 @@ instance Arbitrary Peano where
 instance Arbitrary Text where
   arbitrary = fmap T.pack arbitrary
 
--- |'Text's without sequential newlines or any '#'s
+-- |'Text's without line breaks, or starting with '#'s
 newtype ATX = ATX {unATX :: Text}
   deriving (Eq, Show)
 
@@ -56,20 +56,19 @@ instance Arbitrary ATX where
   arbitrary =
     fmap ATX $
     suchThat arbitrary $
-    not . T.isInfixOf "\n\n"
+    \x ->
+      not (T.isInfixOf "\n" x || T.isPrefixOf "#" (T.strip x))
 
 -- |A non-empty 'ATX'.
-newtype ATXNonEmpty =
-  ATXNE {unATXNE :: Text}
+newtype ATXNonEmpty = ATXNE {unATXNE :: Text}
   deriving (Eq,Show)
 
 instance Arbitrary ATXNonEmpty where
-  arbitrary = fmap (ATXNE . unATX) $
-              suchThat arbitrary $
-              not . T.null . unATX
+  arbitrary =
+    fmap (ATXNE . unATX) $ suchThat arbitrary $ not . T.null . unATX
 
--- |'Text's without sequential newlines or any lines beginning with a
--- =. Trailing newlines are also forbidden.
+-- |'Text's without blank lines, or any lines containing only '='s and
+-- whitespace.
 newtype Setext1 = Setext1 {unSetext1 :: Text}
   deriving (Eq, Show)
 
@@ -79,10 +78,10 @@ instance Arbitrary Setext1 where
     suchThat arbitrary $
     \s ->
       not $
-      (T.isInfixOf "\n\n" s ||
-       any (T.isPrefixOf "=")
-           (T.lines s) ||
-       T.isSuffixOf "\n" s)
+      -- Note that this case also covers blank lines, because the line will
+      -- remain unchanged if you drop all of the '='s
+      any (T.null . T.dropWhile (== '=') . T.strip)
+          (T.lines s)
 
 -- |A non-empty 'Setext1'.
 newtype Setext1NonEmpty = Setext1NE {unSetext1NE :: Text}
@@ -94,8 +93,7 @@ instance Arbitrary Setext1NonEmpty where
               not . T.null . unSetext1
 
 
--- |'Text's without sequential newlines or any lines starting with '-'. Trailing
--- newlines are also forbidden.
+-- |'Text's without blank lines, or lines containing only '-'s and whitespace.
 newtype Setext2 = Setext2 {unSetext2 :: Text}
   deriving (Eq, Show)
 
@@ -105,14 +103,14 @@ instance Arbitrary Setext2 where
     suchThat arbitrary $
     \s ->
       not $
-      (T.isInfixOf "\n\n" s ||
-       any (T.isPrefixOf "-")
-           (T.lines s) ||
-       T.isSuffixOf "\n" s)
+      -- Note that this case also covers blank lines, because the line will
+      -- remain unchanged if you drop all of the '='s
+      any (T.null . T.dropWhile (== '-') . T.strip)
+          (T.lines s)
 
 -- |A non-empty 'Setext2'.
 newtype Setext2NonEmpty = Setext2NE {unSetext2NE :: Text}
-  deriving (Eq,Show)
+  deriving (Eq, Show)
 
 instance Arbitrary Setext2NonEmpty where
   arbitrary = fmap (Setext2NE . unSetext2) $
