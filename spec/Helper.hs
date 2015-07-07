@@ -61,7 +61,7 @@ instance Arbitrary ATX where
 
 -- |A non-empty 'ATX'.
 newtype ATXNonEmpty = ATXNE {unATXNE :: Text}
-  deriving (Eq,Show)
+  deriving (Eq, Show)
 
 instance Arbitrary ATXNonEmpty where
   arbitrary =
