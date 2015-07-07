@@ -128,6 +128,23 @@ instance Arbitrary HSpace where
   arbitrary = fmap (HSpace . T.pack)
                    (listOf (elements " \t"))
 
+-- |Vertical space
+newtype VSpace = VSpace {unVSpace :: Text}
+  deriving (Eq, Show)
+
+instance Arbitrary VSpace where
+  arbitrary = fmap (VSpace . T.pack)
+                   (listOf (pure '\n'))
+
+-- |Whitespace
+newtype WhiteSpace = WhiteSpace {unWhiteSpace :: Text}
+  deriving (Eq, Show)
+
+instance Arbitrary WhiteSpace where
+  arbitrary = fmap (WhiteSpace . T.pack)
+                   (listOf (elements " \t\f\r\n"))
+
+-- |Any 'Text' without newlines or carriage returns
 newtype NonBreaking = NonBreaking {unNonBreaking :: Text}
   deriving (Eq, Show)
 
