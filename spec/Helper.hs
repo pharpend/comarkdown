@@ -135,4 +135,5 @@ instance Arbitrary NonBreaking where
   arbitrary =
     fmap NonBreaking $
     suchThat arbitrary $
-    \x -> not $ T.isInfixOf x "\r\n"
+    \x -> not $ T.any (`elem` ("\r\n" :: String)) x
+
