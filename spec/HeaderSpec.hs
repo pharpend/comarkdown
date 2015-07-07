@@ -46,20 +46,23 @@ spec =
 -- > # This is a header
 atxHeader1 :: Spec
 atxHeader1 =
-  context "Header1" $
-  specify (unwords ["A single '#'"
-                   ,"++ a non-zero number of spaces"
-                   ,"++ a non-empty ATX-compliant header"
-                   ,"++ an arbitrary number of spaces"
-                   ,"++ an arbitrary number of '#'s"
-                   ,"++ an arbitrary number of spaces"
-                   ,"should be an h1 containing the ATX-compliant header"]) $
-  property $
-  \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
-    do let testInput =
-             mconcat ["#",s,h,t,T.pack (replicate k '#'),u]
-       parseResult <- parse "test" testInput
-       parseResult `shouldBe` Right [Markdown (Header1 h)]
+  do context "Header1" $
+       do specify (unwords ["A single '#'"
+                           ,"++ a non-zero number of spaces"
+                           ,"++ a non-empty ATX-compliant header"
+                           ,"++ an arbitrary number of spaces"
+                           ,"++ an arbitrary number of '#'s"
+                           ,"++ an arbitrary number of spaces"
+                           ,"should be an h1 containing the ATX-compliant header"]) $
+            property $
+            \(HSpace s,ATXNE h,HSpace t,Nat k,HSpace u) ->
+              do let testInput =
+                       mconcat ["#",s,h,t,T.pack (replicate k '#'),u]
+                 parseResult <-
+                   parse "test" testInput
+                 parseResult `shouldBe` Right [Markdown (Header1 h)]
+          specify "A sequence of lines all starting with a single '#' should be interpreted as one h1" $
+            pending
 
 -- |Parsing of bare 'Header2's using the following syntax
 -- 
