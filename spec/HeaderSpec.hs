@@ -179,10 +179,11 @@ setextHeader1 =
      specify "1 or more '='s ++ 1 or more non-breaking characters should be paragraph text" $
        property $
        \(Peano i,NonBreaking t) ->
-         do let testInput = mappend (T.pack (replicate i '=')) t
+         do let testInput =
+                  mappend (T.pack (replicate i '=')) t
             parseResult <- parse "test" testInput
             parseResult `shouldBe` Right [Markdown (Paragraph testInput)]
-     specify "optional Setext1-compliant header ++ newline if nonempty header ++ 1 or more '='s ++ 1 or more non-breaming characters should be paragraph text" $
+     specify "optional Setext1-compliant header ++ newline if nonempty header ++ 1 or more '='s ++ 1 or more non-breaking characters should be paragraph text" $
        property $
        \(Setext1 s,Peano i,NonBreaking t) ->
          do let testInput =
