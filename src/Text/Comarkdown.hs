@@ -27,8 +27,14 @@
 -- library to show.
 
 module Text.Comarkdown 
-  ( -- * Types
-    Document
+  ( -- * Parsing
+    Parser
+  , parse
+  , comdParser
+    -- ** Running the results
+  , runDocument
+    -- * Types
+  , Document
   , ComdPart(..)
   , VarMap
   , VarName
@@ -39,4 +45,5 @@ module Text.Comarkdown
   where
 
 
+import Text.Comarkdown.Parser
 import Text.Comarkdown.Types

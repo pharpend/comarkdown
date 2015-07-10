@@ -31,7 +31,19 @@ import Text.Parsec
 import Data.Monoid
 #endif
 
-type Parser = ParsecT ByteString () IO
+parse :: SourceName
+      -> ByteString
+      -> IO (Either String Document)
+parse sn bs =
+  runParserT comdParser () sn bs >>=
+  \case
+    Left x -> return (Left (show x))
+    Right x -> return (Right x)
+
+runDocument :: Document -> ByteString
+runDocument _ = mempty
 
 comdParser :: Parser Document
 comdParser = return mempty
+
+type Parser = ParsecT ByteString () IO
