@@ -38,6 +38,7 @@ library
     , vector
     , yaml
   exposed-modules:
+    Control.Monad.Extra
     Text.Comarkdown
     Text.Comarkdown.Parser
     Text.Comarkdown.Types
