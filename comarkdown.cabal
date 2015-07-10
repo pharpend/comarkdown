@@ -22,6 +22,7 @@ library
   ghc-options:        -Wall
   default-extensions:
     CPP
+    LambdaCase
   build-depends:
       base >=4.7 && <4.9
     , bytestring
