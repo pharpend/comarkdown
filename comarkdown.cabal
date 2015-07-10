@@ -27,3 +27,7 @@ library
     , vector
   exposed-modules:
     Text.Comarkdown
+
+source-repository head
+  type: git
+  location: git://github.com/pharpend/comarkdown.git
