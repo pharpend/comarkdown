@@ -29,10 +29,10 @@ library
     Text.Comarkdown
 
 test-suite tests
-  type: exitcode-stdio-1.0
+  type:             exitcode-stdio-1.0
   default-language: Haskell2010
-  hs-source-dirs: tests
-  main-is: Spec.hs
+  hs-source-dirs:   tests
+  main-is:          Spec.hs
   build-depends:
       base
     , comarkdown
@@ -40,5 +40,5 @@ test-suite tests
     , QuickCheck
 
 source-repository head
-  type: git
+  type:     git
   location: git://github.com/pharpend/comarkdown.git
