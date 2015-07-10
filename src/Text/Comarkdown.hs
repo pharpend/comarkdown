@@ -12,46 +12,30 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Skel
--- Description : Short description
+-- Module      : Text.Comarkdown
+-- Description : The Comarkdown library
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : peter@harpending.org
 -- Stability   : experimental
 -- Portability : portable
+-- 
+-- This is an umbrella module, which means that you only have to import this
+-- module to access the entire Comarkdown API.
+-- 
+-- The documentation so far is abhorrent. I will add it when I actually have a
+-- library to show.
 
-module Text.Comarkdown where
+module Text.Comarkdown 
+  ( -- * Types
+    Document
+  , ComdPart(..)
+  , VarMap
+  , VarName
+  , ApMap
+  , ApKV(..)
+  , Body
+  , BodyPart(..))
+  where
 
-import Data.ByteString (ByteString)
-import Data.Map (Map)
-import Data.Text (Text)
-import Data.Vector (Vector)
 
-type VarName = Text
-type Arity = Int
-type VarMap = Map VarName (Maybe Text)
-
-data Comd
-  = DefCommand VarName
-               VarMap
-               Body
-  | ApCommand VarName
-              ApMap
-  | Comment Text
-  | Ignore ByteString
-  deriving (Eq,Show)
-
-type ApMap = Vector ApKV
-
-data ApKV
-  = Positional Text
-  | Kwarg Text
-          Text
-  deriving (Eq,Show)
-
-type Body = Vector BodyPart
-
-data BodyPart
-  = Insert ByteString
-  | ArgVal Int
-  deriving (Eq,Show)

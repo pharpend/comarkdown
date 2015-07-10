@@ -28,6 +28,7 @@ library
     , vector
   exposed-modules:
     Text.Comarkdown
+    Text.Comarkdown.Types
 
 test-suite tests
   type:             exitcode-stdio-1.0
