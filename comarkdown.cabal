@@ -28,6 +28,7 @@ library
     , vector
   exposed-modules:
     Text.Comarkdown
+    Text.Comarkdown.Parser
     Text.Comarkdown.Types
 
 test-suite tests
