@@ -29,6 +29,7 @@ library
   other-extensions:
     OverloadedStrings
     LambdaCase
+  default-extensions:
     Trustworthy
   build-depends:
       base >=4.7 && <4.9
@@ -63,9 +64,10 @@ test-suite spec
   main-is:             Spec.hs
   ghc-options:         -Wall -threaded -fno-warn-orphans
   other-extensions:
-    OverloadedLists
     CPP
+    OverloadedLists
     OverloadedStrings
+  default-extensions:
     Trustworthy
   other-modules:
     HeaderSpec
