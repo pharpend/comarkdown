@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- This program is free software: you can redistribute it and/or modify it under
@@ -16,6 +17,9 @@
 -- |Wrappers around 'Text'
 module TestTypes.Text where
 
+#if __GLASGOW_HASKELL < 710
+import Control.Applicative
+#endif
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
 import Test.QuickCheck

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- This program is free software: you can redistribute it and/or modify it under
@@ -16,6 +17,9 @@
 -- |Wrapper types and 'Arbitrary' instances around other numeric types
 module TestTypes.Numeric where
 
+#if __GLASGOW_HASKELL < 710
+import Control.Applicative
+#endif
 import Test.QuickCheck
 
 -- |Natural numbers, i.e. integers >= 0

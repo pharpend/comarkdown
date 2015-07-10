@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- This program is free software: you can redistribute it and/or modify it under
@@ -19,6 +20,9 @@ module TestTypes.Header.ATX where
 import TestTypes.Numeric
 import TestTypes.Text
 
+#if __GLASGOW_HASKELL < 710
+import Data.Monoid
+#endif
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
 import Test.QuickCheck
