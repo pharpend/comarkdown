@@ -24,6 +24,7 @@ library
   ghc-options:        -Wall
   default-extensions:
     LambdaCase
+    Trustworthy
   build-depends:
       base ==4.8.*
     , bytestring
@@ -44,7 +45,10 @@ test-suite tests
   ghc-options:      -Wall -threaded
   build-depends:
       base
+    , bytestring
     , comarkdown
+      -- needed for 'makeAbsolute'
+    , directory >=1.2.2.0
     , hspec
     , QuickCheck
 
