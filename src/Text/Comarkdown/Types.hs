@@ -45,6 +45,10 @@ data ComdPart
   | Comment Text
     -- |Stuff to ignore.
   | Ignore ByteString
+    -- |Import definitions from a file
+  | Import FilePath
+    -- |Equivalent to copy & pasting a file in place
+  | Input FilePath
   deriving (Eq,Show)
 
 -- |This one maybe needs a bit of explaining. 
