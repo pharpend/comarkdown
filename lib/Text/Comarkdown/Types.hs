@@ -27,56 +27,119 @@ module Text.Comarkdown.Types where
 import Data.Map (Map)
 import Data.Text.Lazy (Text)
 import Data.Vector (Vector)
-import Data.Yaml
 
--- |A document is many 'DocumentPart's
-type Document = Vector DocumentPart
+type Document = Vector ComarkdownPart
 
--- |There are a few possible objects:
--- 
--- 1. ordinary markdown text, represented as an 'MDPart',
--- 2. the definition of a 'Defn',
--- 3. the application of a 'Defn',
--- 4. a YAML block containing some metadata,
--- 5. importing data from another file,
--- 6. embedding content from another file.
-data DocumentPart
-  = Apply Defn
-  | Define Defn
-  | Embed FilePath
+-- |The type to which files are marshaled.
+data ComarkdownPart
+    -- |Definition of a macro
+  = Define DefMacro
+    -- |Top-level application of a macro
+  | BareApplyMacro ApplyMacro
+    -- |Importing a file.
+    -- 
+    -- Note that importing only imports definitions and their documentation.
   | Import FilePath
-  | Markdown MDPart
-  | Metadata Value
-  deriving (Eq, Show)
-  
--- |A definition. This can be
--- 
--- 1. a function,
--- 2. a mixin, or
--- 3. an environment.
-data Defn
-  = Environment
-  | Function
-  | Mixin
-  deriving (Eq, Show)
+    -- |Input a file. This is equivalent to cut & pasting the entire file into the document
+  | Input FilePath
+    -- |A comment
+  | Comment Text
+    -- |Markdown!
+  | Header Int (Vector HeaderPart)
+  | Paragraph (Vector ParagraphPart)
+  | IndentCode Text
+  | FencedCode
+      -- |The language
+      Text
+      -- |The code itself
+      Text
+  deriving (Eq,Show)
 
--- |A sum type for the markdown parts
-data MDPart
-  = Bold Text
-  | -- |These correspond to @\<h1\>@, @\<h2\>@, etc in HTML
-    Header1 Text
-  | Header2 Text
-  | Header3 Text
-  | Header4 Text
-  | Header5 Text
-  | Header6 Text
-  | Italic Text
-  | -- |@\<ol\>@ in HTML, or @enumerate@ in LaTeX
-    ListOrdered (Vector Document)
-  | -- |@\<ul\>@ in HTML, or @itemize@ in LaTeX
-    ListUnordered (Vector Document)
-  | -- |@\<dl\>@ in HTML, or @description@ in LaTeX
-    ListKeyValue (Map Text Document)
-  | Literal Text
-  | Paragraph Text
+-- |Potential macros
+data DefMacro
+    -- |Equivalent to a @\\newcommand@ in LaTeX.
+  = DefCommand 
+      -- |The name of the command
+      Text
+      -- |A list of arguments with optional default values
+      (Map Text (Maybe Text))
+      -- |What to do with all of this information
+      Text
+    -- |Equivalent to a @\\newenvironment@ in LaTeX.
+  | DefEnvironment 
+      -- |Name of the environment
+      Text
+      -- |A name for the primary data
+      Text
+      -- |A list of variable names with optional default values
+      (Map Text (Maybe Text))
+      -- |What to do with all of this information
+      Text
+  deriving (Eq,Show)
+
+-- |How to apply a macro
+data ApplyMacro
+    -- |Apply a command
+  = ApCommand
+      -- |Name of the command
+      Text
+      -- |Anonymous arguments
+      (Vector Text)
+      -- |Kwargs
+      (Map Text Text)
+    -- |Apply an environment
+  | ApEnvironment
+      -- |Name of the environment
+      Text
+      -- |Anonymous arguments
+      (Vector Text)
+      -- |Kwargs
+      (Map Text Text)
+      -- |Main body
+      Text
+  deriving (Eq,Show)
+
+
+-- |Header parts
+data HeaderPart
+  = HdrPlainWord Text
+  | HdrBoldWord Text
+  | HdrItalicWord Text
+  | HdrMonospaceBlob Text
+  | HdrApplyMacro ApplyMacro
+  deriving (Eq,Show)
+
+-- |Components to a paragraph.
+
+data ParagraphPart
+  = ParPlainWord Text
+  | ParBoldWord Text
+  | ParItalicWord Text
+    -- |Everything here is taken literally, except newlines, which are ignored.
+  | ParMonospaceBlob Text
+  | ParApplyMacro ApplyMacro
+  | Link 
+      -- |The visual thing
+      (Vector ParagraphPart)
+      -- |The actual URL
+      (Either 
+         -- |A canonical URL (i.e. in parens)
+         Text
+         -- |A reference (i.e. in square brackets)
+         Text)
+  | Footnote Text
+  | OrderedList 
+      -- |A list of items
+      (Vector
+         -- |Each of which is a list of paragraphs
+         (Vector
+            -- |Each of which is a list of 'ParagraphPart's
+            (Vector ParagraphPart)))
+  | UnorderedList 
+      -- |A list of items
+      (Vector
+         -- |Each of which is a list of paragraphs
+         (Vector
+            -- |Each of which is a list of 'ParagraphPart's
+            (Vector ParagraphPart)))
   deriving (Eq,Show)

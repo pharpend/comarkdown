@@ -54,12 +54,13 @@ module Text.Comarkdown
   , parseFile
   , parseFile'
   , comarkdownParser
-  , (>>$)
     -- ** Types
   , Document
-  , DocumentPart(..)
-  , Defn(..)
-  , MDPart(..)
+  , ComarkdownPart(..)
+  , DefMacro(..)
+  , ApplyMacro(..)
+  , HeaderPart(..)
+  , ParagraphPart(..)
   )
   where
 

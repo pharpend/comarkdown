@@ -30,26 +30,27 @@
 
 module Text.Comarkdown.Parser where
 
+import Control.Monad.Extra ((>>$))
 import Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy as T
 import qualified Data.Text.Lazy.IO as T
 import Text.Comarkdown.Types
 import Text.Parsec hiding (parse)
 
 -- |A shortcut type for parsers
--- 
--- Since: 0.1.0.0
 type Parser = ParsecT Text DocumentState IO
 
 -- |In the future, we'll have a richer state, but for now...
--- 
--- Since: 0.1.0.0
-type DocumentState = ()
+data DocumentState =
+  DocumentState {indentLevel :: Int}
+  
+-- |The default document state
+nullDocumentState :: DocumentState
+nullDocumentState = DocumentState {indentLevel = 0}
 
 -- |Parse a comarkdown document, returning an error message on a parse failure.
 -- 
 -- I'll save you a click: 'SourceName' is a semantic alias for 'String'
--- 
--- Since: 0.1.0.0
 parse :: SourceName -> Text -> IO (Either String Document)
 parse sn =
   parse' sn >>$
@@ -58,15 +59,11 @@ parse sn =
     Right x -> Right x
 
 -- |Parse a comarkdown document, returning a 'ParseError' on a parse failure.
--- 
--- Since: 0.1.0.0
 parse' :: SourceName -> Text -> IO (Either ParseError Document)
-parse' sn bs = runParserT comarkdownParser () sn bs
+parse' sn bs = runParserT comarkdownParser nullDocumentState sn bs
 
 -- |Parse a comarkdown document from a file, returning an error message on a
 -- parse failure.
--- 
--- Since: 0.1.0.0
 parseFile :: FilePath -> IO (Either String Document)
 parseFile =
   parseFile' >>$
@@ -76,21 +73,34 @@ parseFile =
 
 -- |Parse a comarkdown document from a file, returning a 'ParseError' on a parse
 -- failure.
--- 
--- Since: 0.1.0.0
 parseFile' :: FilePath -> IO (Either ParseError Document)
 parseFile' fp = T.readFile fp >>= parse' fp
 
 -- |The Parsec 'Parser' for Comarkdown 'Document's
--- 
--- Since: 0.1.0.0
 comarkdownParser :: Parser Document
 comarkdownParser = fail "not implemented"
 
--- |Convenience function. It's essentially like '(>=>)', but with a pure
--- function as the second argument
+-- -- |Parser for command definitions
+-- defCommandParser :: Parser DefMacro
+-- defCommandParser = do char '\\'
+--                       cmdName <- variableName
+--                       skipMany space
+--                       char '{'
+--                       skipMany space
+--                       vnd <- varNamesDefaults
+--                       skipMany space
+--                       char '}'
+--                       skipMany space
+--                       body <- between (char '{') (char '}')
+--                       return (DefCommand cmdName vnd body)
+--    varNamesDefaults :: Parser (Map )
+
+-- |Parser for variable names
 -- 
--- Since: 0.1.0.0
-(>>$) :: Monad m => (a -> m b) -> (b -> c) -> a -> m c
-(>>$) monadAction mapper monadVal =
-  fmap mapper (monadAction monadVal)
+-- Anything is a valid variable name as long as it's not a space.
+variableName :: Parser Text
+variableName = fmap T.pack $
+               do skipMany space
+                  initChar <- anyChar
+                  rest <- manyTill anyChar (try space)
+                  return (initChar:rest)
