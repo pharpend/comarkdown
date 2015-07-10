@@ -43,6 +43,8 @@ test-suite tests
   hs-source-dirs:   tests
   main-is:          Spec.hs
   ghc-options:      -Wall -threaded
+  other-modules:
+    ExamplesSpec
   build-depends:
       base
     , bytestring
