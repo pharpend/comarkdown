@@ -2,7 +2,8 @@ name:                comarkdown
 version:             0.1.0.0
 synopsis:            A Haskell library for writing fancy markdown documents.
 -- description:
-homepage:            https://github.com/pharpend/comarkdown.hs
+homepage:            https://github.com/pharpend/comarkdown
+bug-reports:         https://github.com/pharpend/comarkdown/issues
 license:             GPL-3
 license-file:        LICENSE
 author:              Peter Harpending
