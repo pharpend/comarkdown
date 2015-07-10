@@ -39,3 +39,4 @@ module Text.Comarkdown
   where
 
 
+import Text.Comarkdown.Types

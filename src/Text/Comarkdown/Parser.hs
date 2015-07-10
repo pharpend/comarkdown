@@ -22,3 +22,16 @@
 
 module Text.Comarkdown.Parser where
 
+import Text.Comarkdown.Types
+
+import Data.ByteString.Lazy (ByteString)
+import Text.Parsec
+
+#if !(MIN_VERSION_base(4,8,0))
+import Data.Monoid
+#endif
+
+type Parser = ParsecT ByteString () IO
+
+comdParser :: Parser Document
+comdParser = return mempty
