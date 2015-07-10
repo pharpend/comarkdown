@@ -38,7 +38,7 @@ spec =
          expPaths = sort (filter (isSuffixOf ".exp") dirContents)
      forM_ (zip testPaths expPaths) $
        \(tf,rf) -> 
-         specify (mconcat ["Parsing " tf, " matches ",  rf]) $ 
+         specify (mconcat ["Parsing ", tf, " matches ",  rf]) $ 
          do tfContents <- B.readFile (mconcat [testsPath, "/", tf])
             rfContents <- B.readFile (mconcat [testsPath, "/", rf])
             parseResult <- parse tf tfContents
