@@ -27,10 +27,6 @@ import Text.Comarkdown.Types
 import Data.ByteString.Lazy (ByteString)
 import Text.Parsec
 
-#if !(MIN_VERSION_base(4,8,0))
-import Data.Monoid
-#endif
-
 parse :: SourceName
       -> ByteString
       -> IO (Either String Document)
