@@ -31,7 +31,7 @@ library
     LambdaCase
     Trustworthy
   build-depends:
-      base ==4.8.*
+      base >=4.7 && <4.9
     , containers
     , parsec
     , text
@@ -48,6 +48,8 @@ executable comd
   hs-source-dirs:      exe
   main-is:             Main.hs
   ghc-options:         -Wall -threaded
+  other-extensions:
+    CPP
   other-modules:
     Paths_comarkdown
   build-depends:
