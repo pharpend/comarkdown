@@ -1,7 +1,12 @@
 name:                comarkdown
 version:             0.1.0.0
-synopsis:            A Haskell library for writing fancy markdown documents.
--- description:
+synopsis:            A preprocessor for programmable documents.
+description:
+  Comarkdown is a preprocessor for plain-text documents of any format, although
+  it was originally intended for
+  <http://www.pandoc.org/README.html#pandocs-markdown Pandoc's Markdown>. At the
+  moment, it's very simple, and not even functional.
+
 homepage:            https://github.com/pharpend/comarkdown
 bug-reports:         https://github.com/pharpend/comarkdown/issues
 license:             GPL-3
