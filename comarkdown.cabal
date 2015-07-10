@@ -70,6 +70,7 @@ test-suite spec
   default-extensions:
     Trustworthy
   other-modules:
+    CommandSpec
     HeaderSpec
     TestTypes
     TestTypes.Header.ATX
@@ -79,6 +80,7 @@ test-suite spec
   build-depends:
       base
     , comarkdown
+    , containers
     , hspec
     , QuickCheck
     , text
