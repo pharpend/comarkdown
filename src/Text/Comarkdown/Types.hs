@@ -24,8 +24,8 @@
 
 module Text.Comarkdown.Types where
 
-import Data.ByteString (ByteString)
-import Data.Map (Map)
+import Data.ByteString.Lazy (ByteString)
+import Data.Map.Lazy (Map)
 import Data.Text (Text)
 import Data.Vector (Vector)
 
