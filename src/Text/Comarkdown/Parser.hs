@@ -27,6 +27,10 @@ import Text.Comarkdown.Types
 import Data.ByteString.Lazy (ByteString)
 import Text.Parsec
 
+-- |Internal type for parsers
+type Parser = ParsecT ByteString () IO
+
+-- |Parse a lazy 'ByteString'. 'SourceName' is an alias for 'String'.
 parse :: SourceName
       -> ByteString
       -> IO (Either String Document)
@@ -36,10 +40,10 @@ parse sn bs =
     Left x -> return (Left (show x))
     Right x -> return (Right x)
 
+-- |Take a 'Document', and write it out
 runDocument :: Document -> ByteString
 runDocument _ = mempty
 
+-- |Parse a 'Document'
 comdParser :: Parser Document
 comdParser = return mempty
-
-type Parser = ParsecT ByteString () IO
