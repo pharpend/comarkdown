@@ -34,7 +34,7 @@ spec :: Spec
 spec =
   do testsPath <- runIO (makeAbsolute "tests/examples")
      dirContents <- runIO (getDirectoryContents testsPath)
-     let testPaths = sort (filter (isSuffixOf ".in.md") dirContents)
+     let testPaths = sort (filter (isSuffixOf ".in.comd") dirContents)
          expPaths = sort (filter (isSuffixOf ".out.md") dirContents)
      forM_ (zip testPaths expPaths) $
        \(tf,rf) -> 
