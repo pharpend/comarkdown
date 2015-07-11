@@ -24,7 +24,8 @@ module Text.Comarkdown.Parser where
 
 import Text.Comarkdown.Types
 
-import Data.ByteString.Lazy (ByteString)
+import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as B
 import Text.Parsec
 
 -- |Internal type for parsers
@@ -46,4 +47,6 @@ runDocument _ = mempty
 
 -- |Parse a 'Document'
 comdParser :: Parser Document
-comdParser = return mempty
+comdParser = do ignoreStuff <- fmap B.pack 
+                                    (manyTill anyChar (try (char '\\')))
+                return [Ignore ignoreStuff]

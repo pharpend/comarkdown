@@ -28,6 +28,7 @@ library
   ghc-options:        -Wall
   default-extensions:
     LambdaCase
+    OverloadedLists
     Trustworthy
   build-depends:
       base ==4.8.*
