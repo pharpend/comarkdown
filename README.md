@@ -6,8 +6,6 @@ it's very simple, and not even functional.
 
 ## Installation
 
-### With Stack
-
 I recommend you use [Stack][2] to install this. I haven't published a
 version on Hackage yet, so you'll also need [Git][3] to download the
 source code.
@@ -17,15 +15,6 @@ source code.
 
 There isn't an executable yet, so `stack install` won't do you any
 good. You can however run the test suite with `stack test`.
-
-### Sans Stack
-
-This requires GHC 7.10 and `cabal-install >=1.22`
-
-    git clone git://github.com/pharpend/comarkdown.git
-    cd comarkdown
-
-Again, there isn't an ex
 
 ## Contact
 
