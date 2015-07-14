@@ -65,9 +65,9 @@ comdParseFile fp = B.readFile fp >>= comdParse fp
 comdParser :: Parser Document
 comdParser =
   fmap (V.fromList . mconcat)
-       (manyTill (manyTill (altWith "Parsing of macros and such" [])
-                           (many nonsense))
-                 (eof <?> "end of file"))
+       (many1 (manyTill (altWith "Parsing of macros and such" [])
+                        (many1 nonsense <|> eof *> pure [EmptyPart])) <|>
+        eof *> pure [[EmptyPart]])
 
 -- |This runs through a list of parsers, and has a message if all of them fail.
 altWith :: String -> [Parser x] -> Parser x
