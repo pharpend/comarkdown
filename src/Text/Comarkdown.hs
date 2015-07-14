@@ -29,10 +29,24 @@
 module Text.Comarkdown 
   ( -- * Parsing
     Parser
-  , parse
+  , DocumentState(..)
+  , comdParse
+  , comdParseFile
   , comdParser
-    -- ** Running the results
+  , nonsense
+  , whiteSpace
+  , lineComment
+  , blockComment
+  , ignoreBlock
+  , hspace
+  , eol
+    -- ** Helper functions
+  , alt
+  , altWith
+  , flabel
+    -- * Running the results
   , runDocument
+  , runComdPart
     -- * Types
   , Document
   , ComdPart(..)
