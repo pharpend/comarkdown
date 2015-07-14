@@ -14,15 +14,15 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : ParsingSpec
--- Description : Tests for the parser
+-- Module      : Parsers.NonsenseSpec
+-- Description : Tests for the parsers that don't matter
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : peter@harpending.org
 -- Stability   : experimental
 -- Portability : portable
 
-module ParsingSpec where
+module Parsers.NonsenseSpec where
 
 import Text.Comarkdown
 import Types
@@ -36,7 +36,6 @@ import Text.Parsec
 spec :: Spec
 spec =
   parallel $
-  describe "Nonsense parsers" $
   do test_whiteSpace
      test_lineComment
      test_blockComment
