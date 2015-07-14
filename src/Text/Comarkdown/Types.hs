@@ -26,8 +26,22 @@ module Text.Comarkdown.Types where
 
 import Data.ByteString.Lazy (ByteString)
 import Data.Map.Lazy (Map)
-import Data.Text (Text)
+import Data.Text.Lazy (Text)
+import qualified Data.Text.Lazy.Encoding as T
 import Data.Vector (Vector)
+import qualified Data.Vector as V
+
+-- |Take a 'Document', and write it out
+runDocument :: Document -> ByteString
+runDocument = mconcat . V.toList . fmap runComdPart
+
+-- |Write out an individual Comarkdown part
+runComdPart :: ComdPart -> ByteString
+runComdPart pt =
+  case pt of
+    Comment _ -> mempty
+    Ignore x -> T.encodeUtf8 x
+    _ -> mempty
 
 type Document = Vector ComdPart
 
@@ -44,11 +58,9 @@ data ComdPart
     -- sort of documentation in the future.
   | Comment Text
     -- |Stuff to ignore.
-  | Ignore ByteString
-    -- |Import definitions from a file
-  | Import FilePath
-    -- |Equivalent to copy & pasting a file in place
-  | Input FilePath
+  | Ignore Text
+    -- |This is the equivalent of mzero or empty or whatever.
+  | EmptyPart
   deriving (Eq,Show)
 
 -- |This one maybe needs a bit of explaining. 
@@ -74,6 +86,6 @@ type Body = Vector BodyPart
 -- |This can either be a bunch of stuff that we ignore, or "insert the
 -- argument with key".
 data BodyPart
-  = Insert ByteString
+  = Insert Text
   | ArgVal VarName
   deriving (Eq,Show)
