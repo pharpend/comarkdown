@@ -54,6 +54,8 @@ test-suite tests
       base
     , bytestring
     , comarkdown
+    ParsingSpec
+    Types
       -- needed for 'makeAbsolute'
     , directory >=1.2.2.0
     , hspec
