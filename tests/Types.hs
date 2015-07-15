@@ -105,3 +105,18 @@ newtype Nat = Nat { unNat :: Int }
 
 instance Arbitrary Nat where
   arbitrary = fmap Nat (suchThat arbitrary (>= 0))
+
+data Nonsense = WhiteSpace SpaceNonEmpty
+              | LC NonBreakingAscii
+              | BC BlockComment
+  deriving (Eq, Show)
+  
+unNonsense :: Nonsense -> ByteString
+unNonsense (WhiteSpace (SpaceNonEmpty s)) = s
+unNonsense (LC (NonBreakingAscii s)) = s
+unNonsense (BC (BlockComment s)) = s
+
+instance Arbitrary Nonsense where
+  arbitrary = oneof [fmap WhiteSpace arbitrary
+                    ,fmap LC arbitrary
+                    ,fmap BC arbitrary]

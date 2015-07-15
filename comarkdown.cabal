@@ -49,6 +49,7 @@ test-suite tests
   main-is:          Spec.hs
   ghc-options: -Wall -threaded
   default-extensions:
+    LambdaCase
     OverloadedLists
   other-extensions:
     OverloadedStrings
