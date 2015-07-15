@@ -55,6 +55,7 @@ test-suite tests
     OverloadedStrings
   other-modules:
     ExamplesSpec
+    Parsers.LetSpec
     Parsers.NonsenseSpec
     Types
   build-depends:
