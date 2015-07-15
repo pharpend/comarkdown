@@ -26,7 +26,6 @@ import Text.Comarkdown.Types
 
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as B
-import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy as T
 import qualified Data.Vector as V
 import Text.Parsec hiding (parse)
@@ -63,11 +62,8 @@ comdParseFile fp = B.readFile fp >>= comdParse fp
 
 -- |Parse a 'Document'
 comdParser :: Parser Document
-comdParser =
-  fmap (V.fromList . mconcat)
-       (many1 (manyTill (altWith "Parsing of macros and such" [])
-                        (many1 nonsense <|> eof *> pure [EmptyPart])) <|>
-        eof *> pure [[EmptyPart]])
+comdParser = fmap V.fromList 
+                  (many nonsense)
 
 -- |This runs through a list of parsers, and has a message if all of them fail.
 altWith :: String -> [Parser x] -> Parser x
