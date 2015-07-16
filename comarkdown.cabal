@@ -38,6 +38,7 @@ library
     , text
     , vector
   exposed-modules:
+    Text.Comd
     Text.Comarkdown
     Text.Comarkdown.Parser
     Text.Comarkdown.Types
