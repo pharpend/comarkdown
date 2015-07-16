@@ -23,9 +23,7 @@ If you for some reason want to use the literal string `\unignore`, you can use
 the `\ignoretill` macro.
 FOOBARBAZ
 
-\let{\i}{4}
-
-# Example \i
+# Example 4
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra
 eu turpis ac tempor. Nunc efficitur imperdiet iaculis. Mauris interdum

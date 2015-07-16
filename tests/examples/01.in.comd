@@ -1,8 +1,3 @@
-\let{\math}{math_stuff}{\( $math_stuff \)}
-\let{\math2}
-    {math_stuff}
-    {\( $math_stuff \)}
-
 \ignore
 
 \These are some backslashes that Comarkdown should \just ignore.

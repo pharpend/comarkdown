@@ -14,15 +14,15 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Parsers.NonsenseSpec
--- Description : Tests for the parsers that don't matter
+-- Module      : NonsenseSpec
+-- Description : Tests for the 'nonsense' parser
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : peter@harpending.org
 -- Stability   : experimental
 -- Portability : portable
 
-module Parsers.NonsenseSpec where
+module NonsenseSpec where
 
 import Text.Comarkdown
 import Types

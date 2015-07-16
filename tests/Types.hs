@@ -54,12 +54,11 @@ newtype HSpaceNonEmpty =
   deriving (Eq,Show)
 
 instance Arbitrary HSpaceNonEmpty where
-  arbitrary = do
-    fst' <- suchThat arbitrary isHspaceChar
-    fmap (HSpaceNonEmpty . T.encodeUtf8 . T.pack . (fst' :)) (suchThat arbitrary (all isHspaceChar))
-
-    where
-      isHspaceChar = flip elem " \t"
+  arbitrary =
+    do fst' <- suchThat arbitrary isHspaceChar
+       fmap (HSpaceNonEmpty . T.encodeUtf8 . T.pack . (fst' :))
+            (suchThat arbitrary (all isHspaceChar))
+    where isHspaceChar = flip elem " \t"
 
 
 -- |Any space, including form feeds and carriage returns
@@ -67,7 +66,9 @@ newtype Space = Space { unSpace :: ByteString }
   deriving (Eq, Show)
 
 instance Arbitrary Space where
-  arbitrary = fmap (Space . T.encodeUtf8 . T.pack) (suchThat arbitrary (all isSpace))
+  arbitrary =
+    fmap (Space . T.encodeUtf8 . T.pack)
+         (suchThat arbitrary (all isSpace))
 
 -- |Any space, nonempty variant
 newtype SpaceNonEmpty =
@@ -90,7 +91,6 @@ instance Arbitrary NonBreakingAscii where
     where
       isNonBreakingAscii x = not (elem x "\r\n\f") && isAscii x
 
--- |Any space, including form feeds and carriage returns
 newtype BlockComment = BlockComment { unBlockComment :: ByteString }
   deriving (Eq, Show)
 
