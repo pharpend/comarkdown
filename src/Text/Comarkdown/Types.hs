@@ -25,7 +25,6 @@
 module Text.Comarkdown.Types where
 
 import Data.ByteString.Lazy (ByteString)
-import Data.Map.Lazy (Map)
 import Data.Text.Lazy (Text)
 import qualified Data.Text.Lazy.Encoding as T
 import Data.Vector (Vector)
@@ -37,55 +36,22 @@ runDocument = mconcat . V.toList . fmap runComdPart
 
 -- |Write out an individual Comarkdown part
 runComdPart :: ComdPart -> ByteString
-runComdPart pt =
-  case pt of
+runComdPart =
+  \case
     Comment _ -> mempty
     Ignore x -> T.encodeUtf8 x
-    _ -> mempty
+    EmptyPart -> mempty
 
 type Document = Vector ComdPart
 
 -- |Type for the parser
 data ComdPart
-    -- |The definition of a command
-  = DefCommand VarName
-               VarMap
-               Body
-    -- |The application of a command
-  | ApCommand VarName
-              ApMap
     -- |A comment. I'm saving the comments for now, because I might set up some
     -- sort of documentation in the future.
-  | Comment Text
+  = Comment Text
     -- |Stuff to ignore.
   | Ignore Text
     -- |This is the equivalent of mzero or empty or whatever.
   | EmptyPart
   deriving (Eq,Show)
 
--- |This one maybe needs a bit of explaining. 
--- 
--- When defining a command, you must give a list of arguments. With that, you
--- can optionally give a default value to each one.
-type VarMap = Map VarName (Maybe Text)
-type VarName = Text
-
--- |This is the type for a list of arguments to be sent to an 'ApCommand'.
-type ApMap = Vector ApKV
-
--- |An argument can either be positional, or it can be a kwarg (i.e. a keyword
--- argument).
-data ApKV
-  = Positional VarName
-  | Kwarg VarName Text
-  deriving (Eq,Show)
-
--- |The body of commands
-type Body = Vector BodyPart
-
--- |This can either be a bunch of stuff that we ignore, or "insert the
--- argument with key".
-data BodyPart
-  = Insert Text
-  | ArgVal VarName
-  deriving (Eq,Show)

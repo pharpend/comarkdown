@@ -26,6 +26,7 @@ import Text.Comarkdown.Types
 
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as B
+import Data.Map.Lazy (Map)
 import qualified Data.Text.Lazy as T
 import qualified Data.Vector as V
 import Text.Parsec hiding (parse)
@@ -34,23 +35,14 @@ import Text.Parsec hiding (parse)
 type Parser = ParsecT ByteString DocumentState IO
 
 -- |The state of the parser
-data DocumentState 
-  = -- |Everything appears fine and dandy
-    OK
-  | -- |We've started consuming input, but were in the middle of parsing an
-    -- expression when suddenly eof
-    Incomplete IntermediateResult
-
--- IntermediateResult
-data IntermediateResult
-  = Parsing
+type DocumentState = ()
 
 -- |Parse a lazy 'ByteString'. 'SourceName' is an alias for 'String'.
 comdParse :: SourceName
           -> ByteString
           -> IO (Either String Document)
 comdParse sn bs =
-  runParserT comdParser OK sn bs >>=
+  runParserT comdParser () sn bs >>=
   \case
     Left x -> return (Left (show x))
     Right x -> return (Right x)

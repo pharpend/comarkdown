@@ -29,7 +29,7 @@
 module Text.Comarkdown 
   ( -- * Parsing
     Parser
-  , DocumentState(..)
+  , DocumentState
   , comdParse
   , comdParseFile
   , comdParser
@@ -49,15 +49,8 @@ module Text.Comarkdown
   , runComdPart
     -- * Types
   , Document
-  , ComdPart(..)
-  , VarMap
-  , VarName
-  , ApMap
-  , ApKV(..)
-  , Body
-  , BodyPart(..))
+  , ComdPart(..))
   where
-
 
 import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
