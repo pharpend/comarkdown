@@ -36,12 +36,10 @@ library
     , containers
     , parsec
     , text
+    , transformers
     , vector
   exposed-modules:
     Text.Comd
-    Text.Comarkdown
-    Text.Comarkdown.Parser
-    Text.Comarkdown.Types
 
 test-suite tests
   type:             exitcode-stdio-1.0
