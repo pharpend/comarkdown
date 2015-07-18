@@ -33,10 +33,12 @@ library
     Trustworthy
   build-depends:
       base ==4.8.*
+    , data-default
     , exceptional
     , exceptions
     , mtl
     , text
+    , unordered-containers
     , vector
   exposed-modules:
     Text.Comarkdown

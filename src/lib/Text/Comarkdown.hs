@@ -22,11 +22,15 @@
 
 module Text.Comarkdown 
   ( module Control.Exceptional
+  , def
   , module Text.Comarkdown
   ) where
 
 import Control.Exceptional
 import Control.Monad.State
+import Data.Default (def)
+import Data.HashMap.Lazy (HashMap)
+import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Vector (Vector)
@@ -41,17 +45,17 @@ data DocumentState =
 -- |A command has a list of keywords, along with documentation.
 data Command =
   Command   -- |This should not include the prefix (usually a backslash).
-   {cmdPrimary :: Text
+   {cmdPrimary :: CommandName
    ,
     -- |Ditto for these
-    cmdAliases :: Vector Text
+    cmdAliases :: Vector CommandName
    ,cmdDoc :: DocString
    ,cmdFunction :: TextFunction}
-
+   
 -- |An environment is a bit more involved
 data Environment =
-  Environment {envPrimary :: Text
-              ,envAliases :: Vector Text
+  Environment {envPrimary :: EnvironmentName
+              ,envAliases :: Vector EnvironmentName
               ,envDoc :: DocString
               ,
                -- |An environment *must* have some input. I.e. it has to do
@@ -67,8 +71,10 @@ data TextFunction
   = Result DocString Text
   | MoreInput DocString (Text -> TextFunction)
 
--- |Semantic alias for 'Text'
+-- *** Semantic aliases for 'Text'
 type DocString = Text
+type CommandName = Text
+type EnvironmentName = Text
 
 class ToTextFunction a where
   toTextFunction :: DocString -> a -> TextFunction
@@ -76,16 +82,46 @@ class ToTextFunction a where
 instance ToTextFunction Text where
   toTextFunction = Result
 
+instance ToTextFunction String where
+  toTextFunction d = Result d . T.pack
+
 instance ToTextFunction t => ToTextFunction (Text -> t) where
   toTextFunction d f = 
-    -- Dear HLint, this is much easier to understand. I know that it can be
-    -- written pointfree. Congratulations on figuring that out.
     MoreInput d (\x -> toTextFunction d (f x))
+
+instance ToTextFunction t => ToTextFunction (String -> t) where
+  toTextFunction d f =
+    MoreInput d
+              (\x ->
+                 toTextFunction d
+                                (f (T.unpack x)))
+
+-- |Construct a HashMap for efficient lookups of command names.
+commandsMap :: DocumentState -> HashMap CommandName TextFunction
+commandsMap ds =
+  foldl (\accum cmd ->
+           let cmdf = cmdFunction cmd
+           in mappend (H.insert (cmdPrimary cmd) cmdf accum)
+                      (H.fromList
+                         [(alias,cmdf) | alias <- V.toList (cmdAliases cmd)]))
+        mempty
+        (definedCommands ds)
+
+-- |Construct a HashMap for efficient lookups of environment names.
+environmentsMap :: DocumentState -> HashMap EnvironmentName (Text -> TextFunction)
+environmentsMap ds =
+  foldl (\accum env ->
+           let envf = envFunction env
+           in mappend (H.insert (envPrimary env) envf accum)
+                      (H.fromList
+                         [(alias,envf) | alias <- V.toList (envAliases env)]))
+        mempty
+        (definedEnvironments ds)
 
 -- |This inserts a command into the document state. If such a command already
 -- exists, it will return an error message.
 -- 
--- If you don't care about collisions, use 'newCommand\''
+-- Since: 0.1.0.0
 newCommand :: (MonadState DocumentState m)
            => Command -> m (Exceptional ())
 newCommand newcmd =
@@ -117,21 +153,10 @@ newCommand newcmd =
                                       ,". They are all listed here:"
                                       ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
 
--- |Insert a command into the document state. This does not bother to check if
--- such a command already exists. If you want to avoid collisions, use
--- 'newCommand'
-newCommand' :: (MonadState DocumentState m)
-            => Command -> m ()
-newCommand' newcmd =
-  do oldState <- get
-     -- I do get the point of lens, now
-     put (oldState {definedCommands =
-                      (V.cons newcmd (definedCommands oldState))})
-
 -- |This inserts a environment into the document state. If such a environment already
 -- exists, it will return an error message.
 -- 
--- If you don't care about collisions, use 'newEnvironment\''
+-- Since: 0.1.0.0
 newEnvironment
   :: (MonadState DocumentState m)
   => Environment -> m (Exceptional ())
@@ -163,15 +188,3 @@ newEnvironment newenv =
                                       ,T.unpack (envPrimary newenv)
                                       ,". They are all listed here:"
                                       ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
-
--- |Insert a environment into the document state. This does not bother to check if
--- such a environment already exists. If you want to avoid collisions, use
--- 'newEnvironment'
-newEnvironment' :: (MonadState DocumentState m)
-                => Environment -> m ()
-newEnvironment' newenv =
-  do oldState <- get
-     -- I do get the point of lens, now
-     put
-       (oldState {definedEnvironments =
-                    (V.cons newenv (definedEnvironments oldState))})
