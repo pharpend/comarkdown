@@ -30,6 +30,7 @@ library
     FlexibleContexts
     FlexibleInstances
     MultiWayIf
+    OverloadedStrings
     Trustworthy
   build-depends:
       base ==4.8.*
