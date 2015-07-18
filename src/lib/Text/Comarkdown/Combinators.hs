@@ -58,11 +58,21 @@ environmentsMap ds =
 -- exists, it will return an error message.
 -- 
 -- Since: 0.1.0.0
-newCommand :: (MonadState DocumentState m)
-           => Command -> m (Exceptional ())
-newCommand newcmd =
+newCommand :: (MonadState DocumentState m
+              ,ToTextFunction t)
+           => CommandName
+           -> [CommandName]
+           -> DocString
+           -> t
+           -> m (Exceptional ())
+newCommand prim als doc fn =
   do oldState <- get
-     let oldcmds = definedCommands oldState
+     let newcmd =
+           Command prim
+                   (V.fromList als)
+                   doc
+                   (toTextFunction fn)
+         oldcmds = definedCommands oldState
          -- Test to see if any of cmd's tokens are a token of another command
          oldTokens =
            foldl (\stuff cmd ->
@@ -93,12 +103,16 @@ newCommand newcmd =
 -- exists, it will return an error message.
 -- 
 -- Since: 0.1.0.0
-newEnvironment
-  :: (MonadState DocumentState m)
-  => Environment -> m (Exceptional ())
-newEnvironment newenv =
+newEnvironment :: (MonadState DocumentState m, ToTextFunction t)
+               => EnvironmentName
+               -> [EnvironmentName]
+               -> DocString
+               -> (Text -> t)
+               -> m (Exceptional ())
+newEnvironment prim als doc fn =
   do oldState <- get
-     let oldenvs = definedEnvironments oldState
+     let newenv = Environment prim (V.fromList als) doc (toTextFunction . fn)
+         oldenvs = definedEnvironments oldState
          -- Test to see if any of env's tokens are a token of another environment
          oldTokens =
            foldl (\stuff env ->
