@@ -27,19 +27,18 @@ library
   hs-source-dirs:     src/lib
   ghc-options:        -Wall -fno-warn-unused-do-bind
   default-extensions:
-    LambdaCase
-    OverloadedLists
+    FlexibleContexts
+    MultiWayIf
     Trustworthy
   build-depends:
       base ==4.8.*
-    , bytestring
-    , containers
-    , parsec
+    , exceptional
+    , exceptions
+    , mtl
     , text
-    , transformers
     , vector
   exposed-modules:
-    Text.Comd
+    Text.Comarkdown
 
 test-suite tests
   type:             exitcode-stdio-1.0
