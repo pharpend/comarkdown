@@ -33,24 +33,55 @@ import qualified Data.Text as T
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 
--- |A command has a list of keywords, along with documentation.
-data Command =
-  Command {cmdPrimary :: Text
-          ,cmdAliases ::  Vector Text
-          ,cmdExpandTo :: TextFunction
-          ,cmdSynopsis :: Text
-          ,cmdDescription :: Text}
-  deriving (Show,Eq)
-
--- |A function which either produces a result or demands more input
-data TextFunction = Result Text
-                  | MoreInput Text TextFunction
-  deriving (Eq, Show)
-
 -- |The document state has a list of definitions
 data DocumentState =
-  DocumentState {definedCommands :: Vector Command}
-  deriving (Show,Eq)
+  DocumentState {definedCommands :: Vector Command
+                ,definedEnvironments :: Vector Environment
+                ,prefix :: Text}
+
+-- |A command has a list of keywords, along with documentation.
+data Command =
+  Command   -- |This should not include the prefix (usually a backslash).
+   {cmdPrimary :: Text
+   ,
+    -- |Ditto for these
+    cmdAliases :: Vector Text
+   ,cmdDoc :: DocString
+   ,cmdFunction :: TextFunction}
+
+-- |An environment is a bit more involved
+data Environment =
+  Environment {envPrimary :: Text
+              ,envAliases :: Vector Text
+              ,envDoc :: DocString
+              ,
+               -- |An environment *must* have some input. I.e. it has to do
+               -- something with the stuff between @\begin{environment}@ and
+               -- @\end{environment}@.
+               --
+               -- It can optionally require more arguments, but it must document
+               -- them =p.
+               envFunction :: Text -> TextFunction}
+
+-- |A function which either produces a result or demands more input
+data TextFunction
+  = Result DocString Text
+  | MoreInput DocString (Text -> TextFunction)
+
+-- |Semantic alias for 'Text'
+type DocString = Text
+
+class ToTextFunction a where
+  toTextFunction :: DocString -> a -> TextFunction
+
+instance ToTextFunction Text where
+  toTextFunction = Result
+
+instance ToTextFunction t => ToTextFunction (Text -> t) where
+  toTextFunction d f = 
+    -- Dear HLint, this is much easier to understand. I know that it can be
+    -- written pointfree. Congratulations on figuring that out.
+    MoreInput d (\x -> toTextFunction d (f x))
 
 -- |This inserts a command into the document state. If such a command already
 -- exists, it will return an error message.
@@ -59,9 +90,10 @@ data DocumentState =
 newCommand :: (MonadState DocumentState m)
            => Command -> m (Exceptional ())
 newCommand newcmd =
-  do oldcmds <- fmap definedCommands get
-     -- Test to see if any of cmd's tokens are a token of another command
-     let proveThereAreNoCollisions =
+  do oldState <- get
+     let oldcmds = definedCommands oldState
+         -- Test to see if any of cmd's tokens are a token of another command
+         proveThereAreNoCollisions =
            forM_ oldcmds $
            \oldcmd ->
              let newprim = cmdPrimary newcmd
@@ -95,12 +127,15 @@ newCommand newcmd =
        -- If there was a collision, return an error message
        Failure s -> return $ Failure s
        -- If there weren't any collisions, just modify the state
-       Success _ -> fmap Success (put (DocumentState (V.cons newcmd oldcmds)))
+       Success _ ->
+         Success <$> put (oldState {definedCommands = V.cons newcmd oldcmds})
 
 -- |Insert a command into the document state. This does not bother to check if
 -- such a command already exists. If you want to avoid collisions, use 'newCommand'
 newCommand' :: (MonadState DocumentState m)
             => Command -> m ()
 newCommand' newcmd =
-  do oldcmds <- fmap definedCommands get
-     put (DocumentState (V.cons newcmd oldcmds))
+  do oldState <- get
+     -- I do get the point of lens, now
+     put (oldState {definedCommands =
+                      (V.cons newcmd (definedCommands oldState))})

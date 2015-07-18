@@ -28,6 +28,7 @@ library
   ghc-options:        -Wall -fno-warn-unused-do-bind
   default-extensions:
     FlexibleContexts
+    FlexibleInstances
     MultiWayIf
     Trustworthy
   build-depends:
