@@ -78,21 +78,14 @@ type CommandName = Text
 type EnvironmentName = Text
 
 class ToTextFunction a where
-  toTextFunction :: DocString -> a -> TextFunction
+  toTextFunction :: a -> TextFunction
 
-instance ToTextFunction Text where
-  toTextFunction = Result
+instance ToTextFunction TextFunction where
+  toTextFunction = id
 
-instance ToTextFunction String where
-  toTextFunction d = Result d . T.pack
+instance ToTextFunction (DocString, Text) where
+  toTextFunction (d, t) = Result d t
 
-instance ToTextFunction t => ToTextFunction (Text -> t) where
-  toTextFunction d f = 
-    MoreInput d (\x -> toTextFunction d (f x))
-
-instance ToTextFunction t => ToTextFunction (String -> t) where
-  toTextFunction d f =
-    MoreInput d
-              (\x ->
-                 toTextFunction d
-                                (f (T.unpack x)))
+instance ToTextFunction t => ToTextFunction (DocString, (Text -> t)) where
+  toTextFunction (d, f) = 
+    MoreInput d (toTextFunction . f)
