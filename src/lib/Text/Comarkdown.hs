@@ -132,8 +132,9 @@ newCommand' newcmd =
 -- exists, it will return an error message.
 -- 
 -- If you don't care about collisions, use 'newEnvironment\''
-newEnvironment :: (MonadState DocumentState m)
-           => Environment -> m (Exceptional ())
+newEnvironment
+  :: (MonadState DocumentState m)
+  => Environment -> m (Exceptional ())
 newEnvironment newenv =
   do oldState <- get
      let oldenvs = definedEnvironments oldState
@@ -167,7 +168,7 @@ newEnvironment newenv =
 -- such a environment already exists. If you want to avoid collisions, use
 -- 'newEnvironment'
 newEnvironment' :: (MonadState DocumentState m)
-            => Environment -> m ()
+                => Environment -> m ()
 newEnvironment' newenv =
   do oldState <- get
      -- I do get the point of lens, now
