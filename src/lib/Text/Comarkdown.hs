@@ -26,7 +26,6 @@ module Text.Comarkdown
   ) where
 
 import Control.Exceptional
-import Control.Monad
 import Control.Monad.State
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -93,45 +92,34 @@ newCommand newcmd =
   do oldState <- get
      let oldcmds = definedCommands oldState
          -- Test to see if any of cmd's tokens are a token of another command
-         proveThereAreNoCollisions =
-           forM_ oldcmds $
-           \oldcmd ->
-             let newprim = cmdPrimary newcmd
-                 newals = cmdAliases newcmd
-                 oldprim = cmdPrimary oldcmd
-                 oldals = cmdAliases oldcmd
-             in if |  newprim == oldprim ->
-                     fail (mconcat ["Primary name "
-                                   ,T.unpack newprim
-                                   ," is already in use."])
-                   |  newprim `elem` oldals ->
-                     fail (mconcat [T.unpack newprim
-                                   ," is already an alias of "
-                                   ,T.unpack oldprim
-                                   ,"."])
-                   |  otherwise ->
-                     forM_ newals $
-                     \newal ->
-                       if |  newal == oldprim ->
-                            fail (mconcat ["Alias "
-                                          ,T.unpack newal
-                                          ," is the name of an existing command."])
-                          |  newal `elem` oldals ->
-                            fail (mconcat ["Alias "
-                                          ,T.unpack newal
-                                          ," is already an alias of "
-                                          ,T.unpack oldprim])
-                          |  otherwise -> pure ()
-     -- After all that is done...
-     case proveThereAreNoCollisions of
-       -- If there was a collision, return an error message
-       Failure s -> return $ Failure s
-       -- If there weren't any collisions, just modify the state
-       Success _ ->
-         Success <$> put (oldState {definedCommands = V.cons newcmd oldcmds})
+         oldTokens =
+           foldl (\stuff cmd ->
+                    mappend stuff
+                            (V.cons (cmdPrimary cmd)
+                                    (cmdAliases cmd)))
+                 mempty
+                 oldcmds
+         errorMessages =
+           foldl (\accum token ->
+                    if token `elem` oldTokens
+                       then V.snoc accum
+                                   (mappend (T.unpack token)
+                                            " is already in use by another command.")
+                       else accum)
+                 mempty
+                 (V.cons (cmdPrimary newcmd)
+                         (cmdAliases newcmd))
+     if V.null errorMessages
+        then Success <$>
+             put (oldState {definedCommands = V.cons newcmd oldcmds})
+        else return (Failure (mconcat ["There were errors while trying to make the command "
+                                      ,T.unpack (cmdPrimary newcmd)
+                                      ,". They are all listed here:"
+                                      ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
 
 -- |Insert a command into the document state. This does not bother to check if
--- such a command already exists. If you want to avoid collisions, use 'newCommand'
+-- such a command already exists. If you want to avoid collisions, use
+-- 'newCommand'
 newCommand' :: (MonadState DocumentState m)
             => Command -> m ()
 newCommand' newcmd =
