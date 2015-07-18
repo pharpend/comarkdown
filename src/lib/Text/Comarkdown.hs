@@ -127,3 +127,50 @@ newCommand' newcmd =
      -- I do get the point of lens, now
      put (oldState {definedCommands =
                       (V.cons newcmd (definedCommands oldState))})
+
+-- |This inserts a environment into the document state. If such a environment already
+-- exists, it will return an error message.
+-- 
+-- If you don't care about collisions, use 'newEnvironment\''
+newEnvironment :: (MonadState DocumentState m)
+           => Environment -> m (Exceptional ())
+newEnvironment newenv =
+  do oldState <- get
+     let oldenvs = definedEnvironments oldState
+         -- Test to see if any of env's tokens are a token of another environment
+         oldTokens =
+           foldl (\stuff env ->
+                    mappend stuff
+                            (V.cons (envPrimary env)
+                                    (envAliases env)))
+                 mempty
+                 oldenvs
+         errorMessages =
+           foldl (\accum token ->
+                    if token `elem` oldTokens
+                       then V.snoc accum
+                                   (mappend (T.unpack token)
+                                            " is already in use by another environment.")
+                       else accum)
+                 mempty
+                 (V.cons (envPrimary newenv)
+                         (envAliases newenv))
+     if V.null errorMessages
+        then Success <$>
+             put (oldState {definedEnvironments = V.cons newenv oldenvs})
+        else return (Failure (mconcat ["There were errors while trying to make the environment "
+                                      ,T.unpack (envPrimary newenv)
+                                      ,". They are all listed here:"
+                                      ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
+
+-- |Insert a environment into the document state. This does not bother to check if
+-- such a environment already exists. If you want to avoid collisions, use
+-- 'newEnvironment'
+newEnvironment' :: (MonadState DocumentState m)
+            => Environment -> m ()
+newEnvironment' newenv =
+  do oldState <- get
+     -- I do get the point of lens, now
+     put
+       (oldState {definedEnvironments =
+                    (V.cons newenv (definedEnvironments oldState))})
