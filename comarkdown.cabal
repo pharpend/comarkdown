@@ -35,13 +35,13 @@ library
       base ==4.8.*
     , data-default
     , exceptional
-    , exceptions
     , mtl
     , text
     , unordered-containers
     , vector
   exposed-modules:
     Text.Comarkdown
+    Text.Comarkdown.Types
 
 test-suite tests
   type:             exitcode-stdio-1.0

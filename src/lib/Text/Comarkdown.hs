@@ -24,7 +24,10 @@ module Text.Comarkdown
   ( module Control.Exceptional
   , def
   , module Text.Comarkdown
+  , module Text.Comarkdown.Types
   ) where
+
+import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
@@ -33,68 +36,7 @@ import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Vector (Vector)
 import qualified Data.Vector as V
-
--- |The document state has a list of definitions
-data DocumentState =
-  DocumentState {definedCommands :: Vector Command
-                ,definedEnvironments :: Vector Environment
-                ,prefix :: Text}
-
--- |A command has a list of keywords, along with documentation.
-data Command =
-  Command   -- |This should not include the prefix (usually a backslash).
-   {cmdPrimary :: CommandName
-   ,
-    -- |Ditto for these
-    cmdAliases :: Vector CommandName
-   ,cmdDoc :: DocString
-   ,cmdFunction :: TextFunction}
-   
--- |An environment is a bit more involved
-data Environment =
-  Environment {envPrimary :: EnvironmentName
-              ,envAliases :: Vector EnvironmentName
-              ,envDoc :: DocString
-              ,
-               -- |An environment *must* have some input. I.e. it has to do
-               -- something with the stuff between @\begin{environment}@ and
-               -- @\end{environment}@.
-               --
-               -- It can optionally require more arguments, but it must document
-               -- them =p.
-               envFunction :: Text -> TextFunction}
-
--- |A function which either produces a result or demands more input
-data TextFunction
-  = Result DocString Text
-  | MoreInput DocString (Text -> TextFunction)
-
--- *** Semantic aliases for 'Text'
-type DocString = Text
-type CommandName = Text
-type EnvironmentName = Text
-
-class ToTextFunction a where
-  toTextFunction :: DocString -> a -> TextFunction
-
-instance ToTextFunction Text where
-  toTextFunction = Result
-
-instance ToTextFunction String where
-  toTextFunction d = Result d . T.pack
-
-instance ToTextFunction t => ToTextFunction (Text -> t) where
-  toTextFunction d f = 
-    MoreInput d (\x -> toTextFunction d (f x))
-
-instance ToTextFunction t => ToTextFunction (String -> t) where
-  toTextFunction d f =
-    MoreInput d
-              (\x ->
-                 toTextFunction d
-                                (f (T.unpack x)))
 
 -- |Construct a HashMap for efficient lookups of command names.
 commandsMap :: DocumentState -> HashMap CommandName TextFunction
