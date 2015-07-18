@@ -22,15 +22,15 @@
 
 module Text.Comarkdown.Types where
 
+import Data.Default
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Vector (Vector)
 
 -- |The document state has a list of definitions
 data DocumentState =
   DocumentState {definedCommands :: Vector Command
                 ,definedEnvironments :: Vector Environment
-                ,prefix :: Text}
+                ,delimiters :: Delimiters}
 
 -- |A command has a list of keywords, along with documentation.
 data Command =
@@ -55,6 +55,17 @@ data Environment =
                -- It can optionally require more arguments, but it must document
                -- them =p.
                envFunction :: Text -> TextFunction}
+
+-- |Pretty self-explanatory
+data Delimiters =
+  Delimiters {commandPrefix :: Text
+             ,lineCommentPrefix :: Text
+             ,blockCommentPrefix :: Text
+             ,blockCommentSuffix :: Text}
+
+-- |> Delimiters "\\" "//" "/*" "*/"
+instance Default Delimiters where
+  def = Delimiters "\\" "//" "/*" "*/"
 
 -- |A function which either produces a result or demands more input
 data TextFunction
