@@ -13,7 +13,7 @@
 
 -- | 
 -- Module      : Text.Comarkdown.Types
--- Description : The entire comarkdown library in one module
+-- Description : The types for the comarkdown library
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : peter@harpending.org

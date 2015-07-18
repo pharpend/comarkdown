@@ -41,6 +41,7 @@ library
     , vector
   exposed-modules:
     Text.Comarkdown
+    Text.Comarkdown.Combinators
     Text.Comarkdown.Types
 
 test-suite tests
