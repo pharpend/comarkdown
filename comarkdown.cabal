@@ -37,6 +37,7 @@ library
     , data-default
     , exceptional
     , mtl
+    , pandoc
     , text
     , unordered-containers
     , vector
