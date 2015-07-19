@@ -29,8 +29,6 @@ module Text.Comarkdown.Types
   , module Text.Comarkdown.Types
   )
   where
-
-import Control.Monad.IO.Class
 import Control.Monad.State
 import Data.Default
 import Data.Text (Text)
@@ -48,7 +46,7 @@ data Document =
            ,docParts :: Vector DocumentPart}
 
 -- |A 'Compiler' takes a 'Document' and produces something from it
-type Compiler x = forall m. (MonadState Document m, MonadIO m) => m x
+type Compiler x = forall m. MonadState Document m => m x
 
 -- |A command has a list of keywords, along with documentation.
 data Command =
