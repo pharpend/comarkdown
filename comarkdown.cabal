@@ -31,6 +31,7 @@ library
     FlexibleInstances
     MultiWayIf
     OverloadedStrings
+    RankNTypes
     Trustworthy
   build-depends:
       base ==4.8.*
@@ -39,6 +40,7 @@ library
     , mtl
     , pandoc
     , text
+    , transformers
     , unordered-containers
     , vector
   exposed-modules:
