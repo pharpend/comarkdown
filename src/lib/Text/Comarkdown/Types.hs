@@ -20,18 +20,35 @@
 -- Stability   : experimental
 -- Portability : portable
 
-module Text.Comarkdown.Types where
+module Text.Comarkdown.Types 
+  ( -- ** Re-exports from pandoc.
+    Pandoc
+  , readMarkdown
+  , PandocError
+    -- * Comarkdown types
+  , module Text.Comarkdown.Types
+  )
+  where
 
+import Control.Monad.IO.Class
+import Control.Monad.State
 import Data.Default
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Vector (Vector)
-import Text.Pandoc (Pandoc)
+import Text.Pandoc (Pandoc, readMarkdown)
+import Text.Pandoc.Error (PandocError(..))
 
--- |The document state has a list of definitions
-data DocumentState =
-  DocumentState {definedCommands :: Vector Command
-                ,definedEnvironments :: Vector Environment
-                ,delimiters :: Delimiters}
+-- |The document has a list of definitions, as well as the document up to this
+-- point.
+data Document =
+  Document {definedCommands :: Vector Command
+           ,definedEnvironments :: Vector Environment
+           ,delimiters :: Delimiters
+           ,docParts :: Vector DocumentPart}
+
+-- |A 'Compiler' takes a 'Document' and produces something from it
+type Compiler x = forall m. (MonadState Document m, MonadIO m) => m x
 
 -- |A command has a list of keywords, along with documentation.
 data Command =
@@ -71,16 +88,26 @@ data Delimiters =
 instance Default Delimiters where
   def = Delimiters "\\" "//" "/*" "*/" "{" "}" ","
 
+-- |The main type for the parser.
+data DocumentPart
+  = Comment Text
+  | Ignore Text
+  | CommandCall CommandName (Vector Text)
+  | EnvironmentCall EnvironmentName Text (Vector Text)
+  deriving (Eq, Show)
+
 -- |A function which either produces a result or demands more input
 data TextFunction
-  = Result DocString Pandoc
+  = Result DocString (Either PandocError Pandoc)
   | MoreInput DocString (Text -> TextFunction)
 
 -- *** Semantic aliases for 'Text'
 type DocString = Text
 type CommandName = Text
 type EnvironmentName = Text
+type MarkdownText = Text
 
+-- |Yay overloading!
 class ToTextFunction a where
   toTextFunction :: a -> TextFunction
 
@@ -88,8 +115,26 @@ instance ToTextFunction TextFunction where
   toTextFunction = id
 
 instance ToTextFunction (DocString, Pandoc) where
-  toTextFunction = uncurry Result
+  toTextFunction (d, f) = Result d (Right f)
+
+instance ToTextFunction (DocString, PandocError) where
+  toTextFunction (d, f) = Result d (Left f)
+
+-- |Interpret resulting 'String' as markdown
+instance ToTextFunction (DocString, String) where
+  toTextFunction (d, f) = Result d (readMarkdown def f)
+
+-- |Wrapper around instance with 'String's
+instance ToTextFunction (DocString, Text) where
+  toTextFunction (d, f) = Result d (readMarkdown def (T.unpack f))
 
 instance ToTextFunction t => ToTextFunction (DocString, (Text -> t)) where
   toTextFunction (d, f) = 
     MoreInput d (toTextFunction . f)
+
+-- |Wrapper around 'Text' instance
+instance ToTextFunction t => ToTextFunction (DocString, (String -> t)) where
+  toTextFunction (d, f) = 
+    MoreInput d (toTextFunction . f . T.unpack)
+
+

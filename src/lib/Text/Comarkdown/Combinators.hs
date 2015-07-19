@@ -26,40 +26,15 @@ import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
-import Data.HashMap.Lazy (HashMap)
-import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Vector as V
-
--- |Construct a HashMap for efficient lookups of command names.
-commandsMap :: DocumentState -> HashMap CommandName TextFunction
-commandsMap ds =
-  foldl (\accum cmd ->
-           let cmdf = cmdFunction cmd
-           in mappend (H.insert (cmdPrimary cmd) cmdf accum)
-                      (H.fromList
-                         [(alias,cmdf) | alias <- V.toList (cmdAliases cmd)]))
-        mempty
-        (definedCommands ds)
-
--- |Construct a HashMap for efficient lookups of environment names.
-environmentsMap :: DocumentState -> HashMap EnvironmentName (Text -> TextFunction)
-environmentsMap ds =
-  foldl (\accum env ->
-           let envf = envFunction env
-           in mappend (H.insert (envPrimary env) envf accum)
-                      (H.fromList
-                         [(alias,envf) | alias <- V.toList (envAliases env)]))
-        mempty
-        (definedEnvironments ds)
 
 -- |This inserts a command into the document state. If such a command already
 -- exists, it will return an error message.
 -- 
 -- Since: 0.1.0.0
-newCommand :: (MonadState DocumentState m
-              ,ToTextFunction t)
+newCommand :: (MonadState Document m,ToTextFunction t)
            => CommandName
            -> [CommandName]
            -> DocString
@@ -103,7 +78,7 @@ newCommand prim als doc fn =
 -- exists, it will return an error message.
 -- 
 -- Since: 0.1.0.0
-newEnvironment :: (MonadState DocumentState m, ToTextFunction t)
+newEnvironment :: (MonadState Document m,ToTextFunction t)
                => EnvironmentName
                -> [EnvironmentName]
                -> DocString
