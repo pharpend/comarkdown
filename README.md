@@ -12,9 +12,11 @@ source code.
 
     git clone git://github.com/pharpend/comarkdown.git
     cd comarkdown
+    stack build
 
-There isn't an executable yet, so `stack install` won't do you any
-good. You can however run the test suite with `stack test`.
+There isn't an executable, and the current test suite hasn't been
+rewritten to match a rewrite of the library. I'm afraid all you can do
+at the moment is run `stack build` :/.
 
 ## Contact
 
