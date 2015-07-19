@@ -25,6 +25,7 @@ module Text.Comarkdown.Types where
 import Data.Default
 import Data.Text (Text)
 import Data.Vector (Vector)
+import Text.Pandoc (Pandoc)
 
 -- |The document state has a list of definitions
 data DocumentState =
@@ -72,7 +73,7 @@ instance Default Delimiters where
 
 -- |A function which either produces a result or demands more input
 data TextFunction
-  = Result DocString Text
+  = Result DocString Pandoc
   | MoreInput DocString (Text -> TextFunction)
 
 -- *** Semantic aliases for 'Text'
@@ -86,8 +87,8 @@ class ToTextFunction a where
 instance ToTextFunction TextFunction where
   toTextFunction = id
 
-instance ToTextFunction (DocString, Text) where
-  toTextFunction (d, t) = Result d t
+instance ToTextFunction (DocString, Pandoc) where
+  toTextFunction = uncurry Result
 
 instance ToTextFunction t => ToTextFunction (DocString, (Text -> t)) where
   toTextFunction (d, f) = 
