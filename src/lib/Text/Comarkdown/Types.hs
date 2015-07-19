@@ -61,11 +61,14 @@ data Delimiters =
   Delimiters {commandPrefix :: Text
              ,lineCommentPrefix :: Text
              ,blockCommentPrefix :: Text
-             ,blockCommentSuffix :: Text}
+             ,blockCommentSuffix :: Text
+             ,bracketStart :: Text
+             ,bracketEnd :: Text
+             ,bracketSep :: Text}
 
--- |> Delimiters "\\" "//" "/*" "*/"
+-- |> Delimiters "\\" "//" "/*" "*/" "{" "}" ","
 instance Default Delimiters where
-  def = Delimiters "\\" "//" "/*" "*/"
+  def = Delimiters "\\" "//" "/*" "*/" "{" "}" ","
 
 -- |A function which either produces a result or demands more input
 data TextFunction
