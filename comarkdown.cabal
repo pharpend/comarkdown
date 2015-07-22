@@ -40,6 +40,7 @@ library
     , mtl
     , pandoc
     , text
+    , unordered-containers
     , vector
   exposed-modules:
     Text.Comarkdown
