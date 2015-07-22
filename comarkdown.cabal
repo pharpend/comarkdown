@@ -36,7 +36,7 @@ library
   build-depends:
       base ==4.8.*
     , data-default
-    , exceptional
+    , exceptional >=0.2
     , mtl
     , pandoc
     , text
