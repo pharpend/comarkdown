@@ -29,13 +29,23 @@ module Text.Comarkdown.Types
   , module Text.Comarkdown.Types
   )
   where
-import Control.Monad.State
+
 import Data.Default
+import Data.HashMap.Lazy (HashMap)
+import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Vector (Vector)
 import Text.Pandoc (Pandoc, readMarkdown)
 import Text.Pandoc.Error (PandocError(..))
+
+-- |A more efficient representation of 'Document'; it does not include
+-- documentation, and thus is for use when compiling documents.
+data CompilerForm =
+  CompilerForm {cfCommands :: HashMap CommandName TextFunction
+               ,cfEnvironments :: HashMap EnvironmentName (Text -> TextFunction)
+               ,cfDelimiters :: Delimiters
+               ,cfParts :: Vector DocumentPart}
 
 -- |The document has a list of definitions, as well as the document up to this
 -- point.
@@ -45,8 +55,20 @@ data Document =
            ,delimiters :: Delimiters
            ,docParts :: Vector DocumentPart}
 
--- |A 'Compiler' takes a 'Document' and produces something from it
-type Compiler x = forall m. MonadState Document m => m x
+toCf :: Document -> CompilerForm
+toCf doc =
+  CompilerForm {cfCommands =
+                  foldMap (\cmd ->
+                             H.singleton (cmdPrimary cmd)
+                                         (cmdFunction cmd))
+                          (definedCommands doc)
+               ,cfEnvironments =
+                  foldMap (\env ->
+                             H.singleton (envPrimary env)
+                                         (envFunction env))
+                          (definedEnvironments doc)
+               ,cfDelimiters = delimiters doc
+               ,cfParts = docParts doc}
 
 -- |A command has a list of keywords, along with documentation.
 data Command =
