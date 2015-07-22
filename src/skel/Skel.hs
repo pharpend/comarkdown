@@ -12,16 +12,13 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Text.Comarkdown.Skel
+-- Module      : Skel
 -- Description : Short description
--- Copyright   : Copyright 2015 Peter Harpending.
+-- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : peter@harpending.org
 -- Stability   : experimental
 -- Portability : portable
--- 
--- Here is a longer description of this module, containing some commentary with
--- @some markup@.
 
-module Text.Comarkdown.Skel where
+module Skel where
 

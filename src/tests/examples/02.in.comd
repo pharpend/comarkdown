@@ -1,0 +1,9 @@
+// This is the first comment
+
+\ignore
+
+// This is the second comment
+
+\unignore
+
+Comarkdown should ignore the first comment, but keep the second comment.

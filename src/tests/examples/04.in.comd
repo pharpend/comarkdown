@@ -1,0 +1,135 @@
+// This is example 4
+//
+// It contains a comment.
+// 
+// Comments are two sequential slashes.
+// 
+// Prefix one of the slashes with a backslash for it to not be ignored.
+
+/* Alternatively, you can use the C-style syntax
+ *
+ * Personally, for long comments, I like this.
+ *
+ * But every person has a different opinion
+ *
+ */
+
+\ignore
+// Comments will be left literally if they are in an ignore block
+\unignore
+
+\ignoretill{FOOBARBAZ}
+If you for some reason want to use the literal string `\unignore`, you can use
+the `\ignoretill` macro.
+FOOBARBAZ
+
+# Example 4
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec viverra
+eu turpis ac tempor. Nunc efficitur imperdiet iaculis. Mauris interdum
+lectus in neque blandit tempor. Nunc elementum, libero vitae lobortis
+dictum, lectus libero pretium risus, eget rutrum ligula urna vel
+nulla. Nullam auctor pretium arcu nec feugiat. Nullam volutpat, velit
+nec mattis mattis, elit dui blandit nisi, at sollicitudin sem arcu id
+lorem. Donec metus tellus, lobortis ac eleifend a, tristique non
+justo. Nam pharetra ipsum ut volutpat rutrum.\n Vestibulum tincidunt
+pulvinar magna tristique malesuada. Duis quis dictum ex. Mauris tempus
+consectetur mi non placerat. Donec nec mauris pulvinar, maximus ipsum
+sit amet, tempus lectus. Nam non euismod sapien. Nulla a iaculis justo,
+ac venenatis lacus. Nunc pellentesque, ligula quis porta ultrices, nisl
+dolor placerat lacus, vitae pulvinar tellus quam vel purus. Proin quam
+eros, placerat vitae mollis eu, pretium vel nibh. Integer ac vulputate
+justo, a feugiat sapien. Aenean sed velit et neque eleifend lobortis id
+dapibus urna. Donec rutrum aliquet laoreet. Aenean lobortis turpis non
+lectus venenatis fringilla. Sed semper faucibus mauris, vitae vulputate
+diam sagittis id.\n Donec mattis purus purus, quis interdum nisi ornare
+id. Vestibulum at auctor odio. Integer suscipit mollis
+finibus. Vestibulum ante ipsum primis in faucibus orci luctus et
+ultrices posuere cubilia Curae; Aliquam imperdiet magna dui, id
+ultricies ipsum faucibus ut. Aliquam elementum, orci porttitor malesuada
+elementum, metus dolor ullamcorper metus, at placerat nisi purus nec
+dolor. Nullam sit amet consectetur neque. Etiam ac orci id elit placerat
+gravida. In arcu tellus, suscipit id euismod vel, viverra quis
+nibh. Suspendisse consectetur rutrum convallis.\n\n Phasellus facilisis
+finibus molestie. Aliquam eleifend nibh a nunc mattis vestibulum. Nullam
+faucibus elit quis lectus bibendum, vel euismod lectus
+efficitur. Curabitur justo justo, fringilla ut ligula nec, aliquet
+condimentum est. In hac habitasse platea dictumst. Duis congue purus a
+erat sagittis volutpat. Ut id ante vitae dolor consequat aliquam id id
+sapien. Nunc commodo enim id molestie bibendum. Etiam congue massa at
+magna malesuada, sit amet sagittis justo sagittis. Nullam id ligula a
+lectus rhoncus gravida. Integer volutpat urna id dignissim
+pharetra. Etiam pulvinar efficitur malesuada. Lorem ipsum dolor sit
+amet, consectetur adipiscing elit. Integer finibus ultricies
+molestie. Donec ut nunc sodales, consequat ligula id, facilisis
+magna. Cras purus metus, egestas ac augue nec, dapibus pharetra nisl.
+
+Nulla facilisi. Nam eleifend, odio quis ultricies sodales, nisi nibh
+facilisis nulla, quis efficitur mi eros id ipsum. Duis non justo
+facilisis, auctor est sed, condimentum erat. Quisque lacinia dolor ac
+libero semper feugiat. Nulla ac accumsan magna, eget sodales nibh. Proin
+faucibus orci ultricies odio commodo, eget vehicula velit rhoncus. Donec
+nec enim ut leo imperdiet laoreet. Mauris mollis in elit eget
+volutpat. Vestibulum vulputate libero eu ipsum tristique, sit amet
+accumsan ipsum blandit. Aenean magna purus, venenatis quis tempus in,
+posuere sed lacus. Etiam at sapien tristique, fermentum ex at, tempus
+dui. In semper lorem a est lobortis, eu sollicitudin ex aliquet.
+
+Cras dignissim vitae diam sed euismod. Aliquam vehicula vehicula sapien,
+sit amet elementum dolor auctor a. Maecenas venenatis vitae neque non
+dapibus. Sed finibus, dui non ullamcorper euismod, justo dolor egestas
+risus, quis porttitor eros lorem id mi. Nullam vestibulum tortor at dui
+laoreet cursus. Curabitur et pharetra sapien. Lorem ipsum dolor sit
+amet, consectetur adipiscing elit. Aenean in eros in mauris finibus
+accumsan id accumsan risus. Duis consectetur, odio non interdum semper,
+purus leo semper risus, eget egestas magna purus a urna. Nulla
+vestibulum nunc nec ex luctus, at semper ex placerat. Fusce posuere,
+nisi quis tristique scelerisque, velit urna congue nulla, quis iaculis
+tortor nisi sed lectus. Class aptent taciti sociosqu ad litora torquent
+per conubia nostra, per inceptos himenaeos.
+
+Phasellus at diam non purus convallis tristique vitae id ligula. In
+lectus nunc, hendrerit quis diam sit amet, feugiat porta odio. Mauris
+sed nisi sit amet mauris semper aliquet. Donec nec tellus nec neque
+ultricies posuere. Nunc maximus dignissim quam eu mollis. Aliquam at
+ultrices nulla, non aliquet tellus. Cras blandit placerat
+fringilla. Nullam et convallis massa. Nam aliquet, nibh at gravida
+laoreet, felis ante pretium elit, ac laoreet nisi leo non nulla. Donec
+varius suscipit quam. Mauris pharetra eros lorem, nec pellentesque metus
+hendrerit vitae. Duis bibendum sem ultrices enim tempor
+eleifend. Pellentesque eget dignissim turpis. Maecenas sollicitudin
+felis vel sapien efficitur, sed egestas turpis convallis.
+
+Praesent porta eu leo eu gravida. Nulla et ligula quis orci pulvinar
+imperdiet. Aenean semper erat quis laoreet elementum. Fusce aliquam
+finibus leo, vitae lobortis nulla ornare at. In ac mi in erat ultrices
+ullamcorper. Praesent non quam erat. Maecenas ut fermentum enim.
+
+Sed non viverra dolor. Mauris elit neque, feugiat id erat tincidunt,
+rutrum laoreet massa. Nulla in scelerisque erat. Proin hendrerit
+ullamcorper ex sed ultricies. Phasellus sollicitudin sit amet turpis
+vitae dictum. Morbi bibendum metus eget augue convallis hendrerit. Fusce
+a quam vestibulum, ullamcorper ligula nec, interdum sapien. Maecenas
+mattis bibendum tempor. Mauris porttitor in libero a sodales. Donec nunc
+est, congue quis mauris a, pharetra consequat ipsum. Curabitur interdum
+elementum tempor. Fusce eget nibh blandit, ornare mi eu, tincidunt
+nibh. Sed vitae tempor dolor. Etiam at lorem quam.
+
+Curabitur sed libero porttitor, blandit lacus quis, mattis
+ligula. Vestibulum a justo non sem vulputate feugiat id at
+metus. Praesent imperdiet risus metus, eu ornare purus venenatis
+nec. Quisque vitae nunc lorem. Nam at suscipit purus. Integer quis
+venenatis ante, sed gravida eros. Morbi eget enim at ex lobortis
+elementum. Pellentesque ante libero, suscipit imperdiet erat eu, semper
+gravida arcu. In placerat ornare ligula sed dapibus. Suspendisse nulla
+nunc, condimentum accumsan volutpat ac, volutpat tincidunt justo. Nunc
+euismod nibh quis maximus sagittis. Vivamus sit amet ante iaculis,
+egestas mauris eu, sodales libero. Integer at dui sit amet urna finibus
+volutpat. Donec lobortis arcu non augue facilisis, nec consequat magna
+ultrices. Morbi quis neque vulputate, tincidunt orci sed, elementum
+lectus. Phasellus in tempor metus, porttitor imperdiet turpis.
+
+Suspendisse nisl velit, placerat nec turpis quis, vulputate elementum
+libero. Nullam tristique pharetra pharetra. Etiam ut ultricies
+erat. Curabitur nec enim elementum, eleifend felis quis, commodo
+augue. Duis in ornare risus, in.
