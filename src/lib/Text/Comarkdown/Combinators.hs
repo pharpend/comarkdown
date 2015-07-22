@@ -26,9 +26,18 @@ import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
+import Data.Foldable
+import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Vector as V
+
+-- |Attempt to compile a document into text. If it doesn't work, give back an
+-- error message.
+compile :: Document
+        -> Exceptional Text
+compile = undefined
+
 
 -- |This inserts a command into the document state. If such a command already
 -- exists, it will return an error message.
@@ -74,7 +83,7 @@ newCommand prim als doc fn =
                                       ,". They are all listed here:"
                                       ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
 
--- |This inserts a environment into the document state. If such a environment already
+-- |This defines an environment in the current document state. If such a environment already
 -- exists, it will return an error message.
 -- 
 -- Since: 0.1.0.0
