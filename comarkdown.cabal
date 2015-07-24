@@ -48,6 +48,7 @@ library
   exposed-modules:
     Text.Comarkdown
     Text.Comarkdown.Combinators
+    Text.Comarkdown.Parser
     Text.Comarkdown.Types
 
 test-suite tests
