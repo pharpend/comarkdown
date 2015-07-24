@@ -22,17 +22,36 @@
 
 module Text.Comarkdown.Combinators where
 
+import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
 import Data.Bifunctor
+import Data.ByteString (ByteString)
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
 import Text.Pandoc
+
+
+-- |Update the current document with the bytestring
+-- 
+-- > update bs = put =<< (update' <$> get <*> pure bs)
+update :: MonadState Docment m => ByteString -> m ()
+update bs = put =<< (update' <$> get <*> pure bs)
+
+-- |Update a document by adding a Bytestring to it
+update' :: Document -> ByteString -> Document
+update' = undefined
+
+-- |Compile the current document
+-- 
+-- > compile = fmap toCF get >>= compile' >>= runExceptional
+compile :: MonadState Document m => m Pandoc
+compile = fmap toCF get >>= compile' >>= runExceptional
 
 -- |Attempt to compile a document into text. If it doesn't work, give back an
 -- error message.
