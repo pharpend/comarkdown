@@ -102,11 +102,11 @@ compile' compilerForm =
                      Just cmd -> applyTextFunction cmdnom cmd args'
                      Nothing ->
                        fail (mappend "Command not found: " (T.unpack cmdnom))
-                 EnvironmentCall envnom txt args ->
+                 EnvironmentCall envnom txt args' ->
                    case H.lookup envnom (cfEnvironments compilerForm) of
                      Just env ->
                        do txtf <- env txt
-                          applyTextFunction envnom txtf args
+                          applyTextFunction envnom txtf args'
                      Nothing ->
                        fail (mappend "Environment not found: " (T.unpack envnom)))
         for = flip fmap
@@ -173,10 +173,10 @@ newCommand prim als doc fn =
                  mempty
                  oldcmds
          errorMessages =
-           foldl (\accum token ->
-                    if token `elem` oldTokens
+           foldl (\accum token' ->
+                    if token' `elem` oldTokens
                        then V.snoc accum
-                                   (mappend (T.unpack token)
+                                   (mappend (T.unpack token')
                                             " is already in use by another command.")
                        else accum)
                  mempty
@@ -217,10 +217,10 @@ newEnvironment prim als doc fn =
                  mempty
                  oldenvs
          errorMessages =
-           foldl (\accum token ->
-                    if token `elem` oldTokens
+           foldl (\accum token' ->
+                    if token' `elem` oldTokens
                        then V.snoc accum
-                                   (mappend (T.unpack token)
+                                   (mappend (T.unpack token')
                                             " is already in use by another environment.")
                        else accum)
                  mempty

@@ -35,4 +35,4 @@ import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Text.Pandoc
-import Text.Parsec
+import Text.Parsec hiding (parse)
