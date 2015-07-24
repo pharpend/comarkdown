@@ -49,8 +49,9 @@ documentParser =
                   Just fst' -> fst' : rest))
   where interestingPart :: DocParseM DocumentPart
         interestingPart =
-          try lineComment <|> try blockComment <|> try environmentCall <|>
-          try commandCall
+          try explicitIgnore <|> try lineComment <|> try blockComment <|>
+          try environmentCall <|>
+          try commandCall 
 
 -- |Parse a line comment.
 lineComment :: DocParseM DocumentPart
@@ -81,6 +82,7 @@ environmentCall =
   where beginEnv =
           do delims <- fmap delimiters getState
              text (commandPrefix delims)
+             many space
              text "begin"
              many space
              bracketStart'
@@ -93,7 +95,9 @@ environmentCall =
           manyTill anyChar
                    (try (do delims <- fmap delimiters getState
                             text (commandPrefix delims)
+                            many space
                             text "end"
+                            many space
                             bracketStart'
                             text nom
                             bracketEnd'))
@@ -131,6 +135,21 @@ args =
              -- Otherwise, we're done
              bracketEnd'
              return (V.cons thisArg rest)
+
+-- |Parse an explicit ignore block
+explicitIgnore :: DocParseM DocumentPart
+explicitIgnore =
+  label' "explicit ignore" $
+  do delims <- fmap delimiters getState
+     text (commandPrefix delims)
+     many space
+     text "ignore"
+     ignoreThis <-
+       manyTill anyChar
+                (try (do text (commandPrefix delims)
+                         many space
+                         text "unignore"))
+     return (Ignore (T.pack ignoreThis))
 
 -- * Helper functions
 
