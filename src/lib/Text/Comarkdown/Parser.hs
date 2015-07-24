@@ -21,3 +21,142 @@
 -- Portability : portable
 
 module Text.Comarkdown.Parser where
+
+import Text.Comarkdown.Types
+
+import Data.ByteString (ByteString)
+import qualified Data.Text as T
+import qualified Data.Vector as V
+import Text.Parsec
+
+-- |Convenient alias for the particular parser monad
+type DocumentM x = ParsecT ByteString Document IO x
+
+-- |Try to parse a bunch of document parts from a ByteString
+documentParser :: DocumentM (Vector DocumentPart)
+documentParser = label' "document" $ fmap V.fromList (many part)
+  where part =
+          do maybeFirst <- optionMaybe interestingPart
+             rest <- sepEndBy (many1 anyChar) interestingPart
+             return (V.fromList (maybeFirst : rest))
+        interestingPart =
+          try lineComment <|> try blockComment <|> try environmentCall <|>
+          try commandCall
+
+-- |Parse a line comment.
+lineComment :: DocumentM DocumentPart
+lineComment =
+  label' "line comment" $
+  do dels <- fmap delimiters getState
+     text (lineCommentPrefix dels)
+     commentStr <- manyTill anyChar eol
+     return (Comment (T.pack commentStr))
+
+-- |Parse a block comment
+blockComment :: DocumentM DocumentPart
+blockComment =
+  label' "block comment" $
+  do delims <- fmap delimiters getState
+     text (blockCommentPrefix dels)
+     commentStr <- manyTill anyChar (try (text (blockCommentSuffix dels)))
+     return (Comment (T.pack commentStr))
+
+-- |Parse an environment call
+environmentCall :: DocumentM DocumentPart
+environmentCall =
+  label' "environment call" $
+  do delims <- fmap delimiters getState
+     -- Note that, for now ,envArgs will always be empty
+     (envName,envArgs) <- beginEnv <?> "environment name and extra arguments"
+     envBody' <- envBody envName
+     return (EnvironmentCall envName envBody' envArgs)
+  where beginEnv =
+          do text (commandPrefix delims)
+             text "begin"
+             many space
+             bracketStart'
+             envName <-
+               label' "environment name" (manyTill anyChar (try bracketEnd'))
+             return (T.pack envName,mempty)
+        envBody nom =
+          manyTill anyChar
+                   (try (do text (commandPrefix delims)
+                            text "end"
+                            bracketStart'
+                            text nom
+                            bracketEnd'))
+
+-- |Parse a command call
+commandCall :: DocumentM DocumentPart
+commandCall =
+  label' "command call" $
+  do delims <- fmap delimiters getState
+     text (commandPrefix delims)
+     many space
+     -- Anything until a space
+     fst' <- anyChar
+     rest <- manyTill anyChar (try space)
+     let cmdName = T.pack (fst' : rest)
+     args' <- args
+     return (Command cmdName args')
+
+-- Parse arguments within the delimiters. This also parses the open and close
+-- braces
+args :: DocumentM (Vector Text)
+args =
+  label' "arguments in brackets" $
+  do bracketStart'
+     args'
+  where args' =
+          do firstChar <- anyChar
+             restOfChars <-
+               manyTill anyChar (try bracketSep' <|> try bracketEnd')
+             let thisArg = T.pack (firstChar : restOfChars)
+             -- If there's a comma, parse more stuff
+             rest <-
+               try (do bracketSep'
+                       arg)
+             -- Otherwise, we're done
+             bracketEnd'
+             return (V.fromList (thisArg : rest))
+
+-- * Helper functions
+
+bracketStart' :: DocumentM ()
+bracketStart' =
+  label' "start bracket" $
+  do brs <- fmap (bracketStart . delimiters) getState
+     text brs
+     many space
+     return ()
+
+bracketEnd' :: DocumentM ()
+bracketEnd' =
+  label' "end bracket" $
+  do many space
+     brs <- fmap (bracketEnd . delimiters) getState
+     text brs
+     return ()
+
+bracketSep' :: DocumentM ()
+bracketSep' =
+  label' "argument separator" $
+  do many space
+     brs <- fmap (bracketSep . delimiters) getState
+     text brs
+     many space
+     return ()
+
+-- |Parse an end-of-line or end-of-file
+eol :: DocumentM Text
+eol =
+  label' "end of line" $
+  try (text "\r\n") <|> try (text "\r") <|> try (text "\n") <|> eof
+
+-- |Same as 'label' with the arguments flipped
+label' :: String -> DocumentM a -> DocumentM a
+label' = flip label
+
+-- |Wrapper around 'string'
+text :: Text -> DocumentM Text
+text = fmap T.pack . string . T.unpack
