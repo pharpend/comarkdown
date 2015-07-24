@@ -36,13 +36,18 @@ type DocumentM x = ParsecT ByteString Document IO x
 
 -- |Try to parse a bunch of document parts from a ByteString
 documentParser :: DocumentM (Vector DocumentPart)
-documentParser = label' "document" $ fmap V.fromList (many part)
-  where part =
-          do maybeFirst <- optionMaybe interestingPart
-             rest <- sepEndBy (many1 anyChar) interestingPart
-             return (V.fromList (case maybeFirst of 
-                                   Nothing -> rest
-                                   Just fst -> fst : rest))
+documentParser =
+  label' "document" $
+  do maybeFirst <- optionMaybe interestingPart
+     rest <-
+       sepEndBy (fmap (Ignore . T.pack)
+                      (many1 anyChar))
+                interestingPart
+     return (V.fromList
+               (case maybeFirst of
+                  Nothing -> rest
+                  Just fst' -> fst' : rest))
+  where interestingPart :: DocumentM DocumentPart
         interestingPart =
           try lineComment <|> try blockComment <|> try environmentCall <|>
           try commandCall
@@ -69,10 +74,9 @@ blockComment =
 environmentCall :: DocumentM DocumentPart
 environmentCall =
   label' "environment call" $
-  do delims <- fmap delimiters getState
-     -- Note that, for now ,envArgs will always be empty
-     (envName,envArgs) <- beginEnv <?> "environment name and extra arguments"
+  do (envName,envArgs) <- beginEnv <?> "environment name and extra arguments"
      envBody' <- envBody envName
+     -- Note that, for now, envArgs will always be empty
      return (EnvironmentCall envName envBody' envArgs)
   where beginEnv =
           do delims <- fmap delimiters getState
@@ -83,7 +87,9 @@ environmentCall =
              envName <-
                label' "environment name" (manyTill anyChar (try bracketEnd'))
              return (T.pack envName,mempty)
+        envBody :: Text -> DocumentM Text
         envBody nom =
+          T.pack <$>
           manyTill anyChar
                    (try (do delims <- fmap delimiters getState
                             text (commandPrefix delims)
@@ -104,7 +110,7 @@ commandCall =
      rest <- manyTill anyChar (try space)
      let cmdName = T.pack (fst' : rest)
      args' <- args
-     return (Command cmdName args')
+     return (CommandCall cmdName args')
 
 -- Parse arguments within the delimiters. This also parses the open and close
 -- braces
@@ -124,7 +130,7 @@ args =
                        args')
              -- Otherwise, we're done
              bracketEnd'
-             return (V.fromList (thisArg : rest))
+             return (V.cons thisArg rest)
 
 -- * Helper functions
 
@@ -154,10 +160,13 @@ bracketSep' =
      return ()
 
 -- |Parse an end-of-line or end-of-file
-eol :: DocumentM Text
+eol :: DocumentM ()
 eol =
   label' "end of line" $
-  try (text "\r\n") <|> try (text "\r") <|> try (text "\n") <|> eof
+  try_ (text "\r\n") <|> try_ (text "\r") <|> try_ (text "\n") <|> eof
+  where try_ x =
+          do try x
+             return ()
 
 -- |Same as 'label' with the arguments flipped
 label' :: String -> DocumentM a -> DocumentM a

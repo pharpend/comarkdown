@@ -22,7 +22,6 @@
 
 module Text.Comarkdown.Combinators where
 
-import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
@@ -40,7 +39,7 @@ import Text.Pandoc
 -- |Update the current document with the bytestring
 -- 
 -- > update bs = put =<< (update' <$> get <*> pure bs)
-update :: MonadState Docment m => ByteString -> m ()
+update :: MonadState Document m => ByteString -> m ()
 update bs = put =<< (update' <$> get <*> pure bs)
 
 -- |Update a document by adding a Bytestring to it
@@ -49,14 +48,14 @@ update' = undefined
 
 -- |Compile the current document
 -- 
--- > compile = fmap toCF get >>= compile' >>= runExceptional
+-- > compile = fmap toCf get >>= runExceptional . compile'
 compile :: MonadState Document m => m Pandoc
-compile = fmap toCF get >>= compile' >>= runExceptional
+compile = fmap toCf get >>= runExceptional . compile' 
 
 -- |Attempt to compile a document into text. If it doesn't work, give back an
 -- error message.
 compile' :: CompilerForm
-         => Exceptional Pandoc
+         -> Exceptional Pandoc
 compile' compilerForm =
   fromEither (bimap mconcat mconcat (foldExceptional textParts))
   where textParts =
@@ -68,9 +67,9 @@ compile' compilerForm =
                                      (T.unpack txt) of
                      Left pde -> fail (mconcat ["Pandoc error: ",show pde])
                      Right pd -> return pd
-                 CommandCall cmdnom args ->
+                 CommandCall cmdnom args' ->
                    case H.lookup cmdnom (cfCommands compilerForm) of
-                     Just cmd -> applyTextFunction cmdnom cmd args
+                     Just cmd -> applyTextFunction cmdnom cmd args'
                      Nothing ->
                        fail (mappend "Command not found: " (T.unpack cmdnom))
                  EnvironmentCall envnom txt args ->
