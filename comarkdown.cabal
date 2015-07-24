@@ -37,9 +37,11 @@ library
   build-depends:
       base ==4.8.*
     , data-default
-    , exceptional >=0.2
+    , exceptional >=0.3
+    , exceptions
     , mtl
     , pandoc
+    , safe
     , text
     , unordered-containers
     , vector
