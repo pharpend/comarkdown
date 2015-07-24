@@ -26,18 +26,77 @@ import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
-import Data.Foldable
+import Data.Bifunctor
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
+import Text.Pandoc
 
 -- |Attempt to compile a document into text. If it doesn't work, give back an
 -- error message.
-compile :: Document
-        -> Exceptional Text
-compile = undefined
-
+compile :: CompilerForm
+        -> Exceptional Pandoc
+compile compilerForm =
+  fromEither (bimap mconcat mconcat (foldExceptional textParts))
+  where textParts =
+          for (cfParts compilerForm)
+              (\case
+                 Comment _ -> return mempty
+                 Ignore txt ->
+                   case readMarkdown def
+                                     (T.unpack txt) of
+                     Left pde -> fail (mconcat ["Pandoc error: ",show pde])
+                     Right pd -> return pd
+                 CommandCall cmdnom args ->
+                   case H.lookup cmdnom (cfCommands compilerForm) of
+                     Just cmd -> applyTextFunction cmdnom cmd args
+                     Nothing ->
+                       fail (mappend "Command not found: " (T.unpack cmdnom))
+                 EnvironmentCall envnom txt args ->
+                   case H.lookup envnom (cfEnvironments compilerForm) of
+                     Just env ->
+                       do txtf <- env txt
+                          applyTextFunction envnom txtf args
+                     Nothing ->
+                       fail (mappend "Environment not found: " (T.unpack envnom)))
+        for = flip fmap
+        applyTextFunction = applyTextFunction' 0
+        applyTextFunction' :: Int                -- Arity so far
+                           -> Text               -- Function name
+                           -> TextFunction       -- The function
+                           -> Vector Text        -- Arguments
+                           -> Exceptional Pandoc
+        applyTextFunction' i funname tf txts =
+          case (tf,txts !? 0) of
+            -- No more arguments to send, and we have a result, send back the
+            -- result
+            (Result _ x,Nothing) -> fromPandoc' x
+            -- More arguments to send, but have a result, fail with an arity
+            -- mismatch
+            (Result _ _,Just _) ->
+              fail (mconcat ["Arity mismatch in function: "
+                            ,T.unpack funname
+                            ,". Function has an arity of "
+                            ,show i
+                            ," but more arguments were supplied."])
+            -- No more arguments to send, but we don't have a result
+            (MoreInput _ _,Nothing) ->
+              fail (mconcat ["You did not send enough arguments to the function "
+                            ,T.unpack funname
+                            ,". Comarkdown functions have indeterminate arity, so I cannot tell you how many arguments you need to send, only that you have not sent enough."])
+            -- We don't have a result, but we do have more arguments to
+            -- send. Send them!
+            (MoreInput _ ttntf,Just x) ->
+              do newTF <- ttntf x
+                 applyTextFunction' (i + 1)
+                                    funname
+                                    newTF
+                                    (V.tail txts)
+        fromPandoc'
+          :: Either PandocError Pandoc -> Exceptional Pandoc
+        fromPandoc' = fromEither . first show
 
 -- |This inserts a command into the document state. If such a command already
 -- exists, it will return an error message.
@@ -91,11 +150,15 @@ newEnvironment :: (MonadState Document m,ToTextFunction t)
                => EnvironmentName
                -> [EnvironmentName]
                -> DocString
-               -> (Text -> t)
+               -> (Text -> Exceptional t)
                -> m (Exceptional ())
 newEnvironment prim als doc fn =
   do oldState <- get
-     let newenv = Environment prim (V.fromList als) doc (toTextFunction . fn)
+     let newenv =
+           Environment prim
+                       (V.fromList als)
+                       doc
+                       (fmap toTextFunction . fn)
          oldenvs = definedEnvironments oldState
          -- Test to see if any of env's tokens are a token of another environment
          oldTokens =
