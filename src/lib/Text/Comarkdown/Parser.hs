@@ -25,7 +25,9 @@ module Text.Comarkdown.Parser where
 import Text.Comarkdown.Types
 
 import Data.ByteString (ByteString)
+import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec
 
@@ -38,7 +40,9 @@ documentParser = label' "document" $ fmap V.fromList (many part)
   where part =
           do maybeFirst <- optionMaybe interestingPart
              rest <- sepEndBy (many1 anyChar) interestingPart
-             return (V.fromList (maybeFirst : rest))
+             return (V.fromList (case maybeFirst of 
+                                   Nothing -> rest
+                                   Just fst -> fst : rest))
         interestingPart =
           try lineComment <|> try blockComment <|> try environmentCall <|>
           try commandCall
@@ -57,8 +61,8 @@ blockComment :: DocumentM DocumentPart
 blockComment =
   label' "block comment" $
   do delims <- fmap delimiters getState
-     text (blockCommentPrefix dels)
-     commentStr <- manyTill anyChar (try (text (blockCommentSuffix dels)))
+     text (blockCommentPrefix delims)
+     commentStr <- manyTill anyChar (try (text (blockCommentSuffix delims)))
      return (Comment (T.pack commentStr))
 
 -- |Parse an environment call
@@ -71,7 +75,8 @@ environmentCall =
      envBody' <- envBody envName
      return (EnvironmentCall envName envBody' envArgs)
   where beginEnv =
-          do text (commandPrefix delims)
+          do delims <- fmap delimiters getState
+             text (commandPrefix delims)
              text "begin"
              many space
              bracketStart'
@@ -80,7 +85,8 @@ environmentCall =
              return (T.pack envName,mempty)
         envBody nom =
           manyTill anyChar
-                   (try (do text (commandPrefix delims)
+                   (try (do delims <- fmap delimiters getState
+                            text (commandPrefix delims)
                             text "end"
                             bracketStart'
                             text nom
@@ -115,7 +121,7 @@ args =
              -- If there's a comma, parse more stuff
              rest <-
                try (do bracketSep'
-                       arg)
+                       args')
              -- Otherwise, we're done
              bracketEnd'
              return (V.fromList (thisArg : rest))
