@@ -12,29 +12,13 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Text.Comarkdown
--- Description : The entire comarkdown library in one module
+-- Module      : Text.Comarkdown.Stdlib
+-- Description : The comarkdown standard library
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
 -- Maintainer  : peter@harpending.org
 -- Stability   : experimental
 -- Portability : portable
 
-module Text.Comarkdown 
-  ( module Control.Exceptional
-  , module Text.Pandoc
-  , module Text.Parsec
-  , module Text.Comarkdown.Combinators
-  , module Text.Comarkdown.Parser
-  , module Text.Comarkdown.Stdlib
-  , module Text.Comarkdown.Types
-  ) where
+module Text.Comarkdown.Stdlib where
 
-import Text.Comarkdown.Combinators
-import Text.Comarkdown.Parser
-import Text.Comarkdown.Stdlib
-import Text.Comarkdown.Types
-
-import Control.Exceptional
-import Text.Pandoc
-import Text.Parsec hiding (parse)

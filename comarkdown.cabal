@@ -52,6 +52,7 @@ library
     Text.Comarkdown
     Text.Comarkdown.Combinators
     Text.Comarkdown.Parser
+    Text.Comarkdown.Stdlib
     Text.Comarkdown.Types
 
 test-suite tests
