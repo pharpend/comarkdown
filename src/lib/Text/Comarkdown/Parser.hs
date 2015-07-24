@@ -32,10 +32,10 @@ import qualified Data.Vector as V
 import Text.Parsec
 
 -- |Convenient alias for the particular parser monad
-type DocumentM x = ParsecT ByteString Document IO x
+type DocParseM x = ParsecT ByteString Document IO x
 
 -- |Try to parse a bunch of document parts from a ByteString
-documentParser :: DocumentM (Vector DocumentPart)
+documentParser :: DocParseM (Vector DocumentPart)
 documentParser =
   label' "document" $
   do maybeFirst <- optionMaybe interestingPart
@@ -47,13 +47,13 @@ documentParser =
                (case maybeFirst of
                   Nothing -> rest
                   Just fst' -> fst' : rest))
-  where interestingPart :: DocumentM DocumentPart
+  where interestingPart :: DocParseM DocumentPart
         interestingPart =
           try lineComment <|> try blockComment <|> try environmentCall <|>
           try commandCall
 
 -- |Parse a line comment.
-lineComment :: DocumentM DocumentPart
+lineComment :: DocParseM DocumentPart
 lineComment =
   label' "line comment" $
   do dels <- fmap delimiters getState
@@ -62,7 +62,7 @@ lineComment =
      return (Comment (T.pack commentStr))
 
 -- |Parse a block comment
-blockComment :: DocumentM DocumentPart
+blockComment :: DocParseM DocumentPart
 blockComment =
   label' "block comment" $
   do delims <- fmap delimiters getState
@@ -71,7 +71,7 @@ blockComment =
      return (Comment (T.pack commentStr))
 
 -- |Parse an environment call
-environmentCall :: DocumentM DocumentPart
+environmentCall :: DocParseM DocumentPart
 environmentCall =
   label' "environment call" $
   do (envName,envArgs) <- beginEnv <?> "environment name and extra arguments"
@@ -87,7 +87,7 @@ environmentCall =
              envName <-
                label' "environment name" (manyTill anyChar (try bracketEnd'))
              return (T.pack envName,mempty)
-        envBody :: Text -> DocumentM Text
+        envBody :: Text -> DocParseM Text
         envBody nom =
           T.pack <$>
           manyTill anyChar
@@ -99,7 +99,7 @@ environmentCall =
                             bracketEnd'))
 
 -- |Parse a command call
-commandCall :: DocumentM DocumentPart
+commandCall :: DocParseM DocumentPart
 commandCall =
   label' "command call" $
   do delims <- fmap delimiters getState
@@ -114,7 +114,7 @@ commandCall =
 
 -- Parse arguments within the delimiters. This also parses the open and close
 -- braces
-args :: DocumentM (Vector Text)
+args :: DocParseM (Vector Text)
 args =
   label' "arguments in brackets" $
   do bracketStart'
@@ -134,7 +134,7 @@ args =
 
 -- * Helper functions
 
-bracketStart' :: DocumentM ()
+bracketStart' :: DocParseM ()
 bracketStart' =
   label' "start bracket" $
   do brs <- fmap (bracketStart . delimiters) getState
@@ -142,7 +142,7 @@ bracketStart' =
      many space
      return ()
 
-bracketEnd' :: DocumentM ()
+bracketEnd' :: DocParseM ()
 bracketEnd' =
   label' "end bracket" $
   do many space
@@ -150,7 +150,7 @@ bracketEnd' =
      text brs
      return ()
 
-bracketSep' :: DocumentM ()
+bracketSep' :: DocParseM ()
 bracketSep' =
   label' "argument separator" $
   do many space
@@ -160,7 +160,7 @@ bracketSep' =
      return ()
 
 -- |Parse an end-of-line or end-of-file
-eol :: DocumentM ()
+eol :: DocParseM ()
 eol =
   label' "end of line" $
   try_ (text "\r\n") <|> try_ (text "\r") <|> try_ (text "\n") <|> eof
@@ -169,9 +169,9 @@ eol =
              return ()
 
 -- |Same as 'label' with the arguments flipped
-label' :: String -> DocumentM a -> DocumentM a
+label' :: String -> DocParseM a -> DocParseM a
 label' = flip label
 
 -- |Wrapper around 'string'
-text :: Text -> DocumentM Text
+text :: Text -> DocParseM Text
 text = fmap T.pack . string . T.unpack
