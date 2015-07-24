@@ -22,29 +22,59 @@
 
 module Text.Comarkdown.Combinators where
 
+import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
+import Control.Monad.IO.Class
 import Control.Monad.State
 import Data.Bifunctor
 import Data.ByteString (ByteString)
+import qualified Data.ByteString as B
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
+import Text.Parsec
 import Text.Pandoc
 
-
--- |Update the current document with the bytestring
+-- |Parse a ByteString into the current document.
 -- 
--- > update bs = put =<< (update' <$> get <*> pure bs)
-update :: MonadState Document m => ByteString -> m ()
-update bs = put =<< (update' <$> get <*> pure bs)
+-- The source name is required for error messages
+parse :: (MonadState Document m,MonadIO m)
+      => SourceName -> ByteString -> m ()
+parse sn bs =
+  do doc <- get
+     exceptionalDocument <- liftIO $ parse' doc sn bs
+     mDocument <- runExceptional exceptionalDocument
+     put mDocument
 
--- |Update a document by adding a Bytestring to it
-update' :: Document -> ByteString -> Document
-update' = undefined
+-- |Parse a ByteString, given an existing document (with definitions and stuff),
+-- the name of the source, and a Bytestring to parse.
+parse' :: Document -> SourceName -> ByteString -> IO (Exceptional Document)
+parse' doc sn bs =
+  runParserT documentParser doc sn bs >>=
+  return .
+  \case
+    Left parseError -> fail (show parseError)
+    Right parts -> return (doc {docParts = mappend (docParts doc) parts})
+
+-- |Parse a file into the current document
+parseFile :: (MonadState Document m, MonadIO m) => FilePath -> m ()
+parseFile fp =
+  do doc <- get
+     excNewDoc <- parseFile doc fp
+     mNewDoc <- runExceptional excNewDoc
+     put mNewDoc
+
+
+-- |Runs 'parse\'' on the contents of a file, using the 'FilePath' as the
+-- 'SourceName'
+parseFile' :: Document -> FilePath -> IO (Exceptional Document)
+parseFile' doc fp =
+  do contents <- B.readFile fp
+     parse' doc fp contents
 
 -- |Compile the current document
 -- 
