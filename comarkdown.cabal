@@ -29,6 +29,7 @@ library
   default-extensions:
     FlexibleContexts
     FlexibleInstances
+    LambdaCase
     MultiWayIf
     OverloadedStrings
     RankNTypes
