@@ -22,13 +22,17 @@
 
 module Text.Comarkdown 
   ( module Control.Exceptional
-  , def
+  , module Text.Pandoc
+  , module Text.Parsec
   , module Text.Comarkdown.Combinators
+  , module Text.Comarkdown.Parser
   , module Text.Comarkdown.Types
   ) where
 
 import Text.Comarkdown.Combinators
+import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
-import Data.Default (def)
+import Text.Pandoc
+import Text.Parsec
