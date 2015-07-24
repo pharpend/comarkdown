@@ -64,7 +64,7 @@ parse' doc sn bs =
 parseFile :: (MonadState Document m, MonadIO m) => FilePath -> m ()
 parseFile fp =
   do doc <- get
-     excNewDoc <- parseFile doc fp
+     excNewDoc <- liftIO (parseFile' doc fp)
      mNewDoc <- runExceptional excNewDoc
      put mNewDoc
 
