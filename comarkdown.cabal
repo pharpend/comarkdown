@@ -36,6 +36,7 @@ library
     Trustworthy
   build-depends:
       base ==4.8.*
+    , bytestring
     , data-default
     , exceptional >=0.3
     , exceptions
