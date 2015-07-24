@@ -45,6 +45,7 @@ library
     , parsec
     , safe
     , text
+    , transformers
     , unordered-containers
     , vector
   exposed-modules:
