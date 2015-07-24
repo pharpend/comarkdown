@@ -30,6 +30,7 @@ module Text.Comarkdown.Types
   )
   where
 
+import Control.Exceptional
 import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
@@ -43,7 +44,7 @@ import Text.Pandoc.Error (PandocError(..))
 -- documentation, and thus is for use when compiling documents.
 data CompilerForm =
   CompilerForm {cfCommands :: HashMap CommandName TextFunction
-               ,cfEnvironments :: HashMap EnvironmentName (Text -> TextFunction)
+               ,cfEnvironments :: HashMap EnvironmentName (Text -> Exceptional TextFunction)
                ,cfDelimiters :: Delimiters
                ,cfParts :: Vector DocumentPart}
 
@@ -92,7 +93,7 @@ data Environment =
                --
                -- It can optionally require more arguments, but it must document
                -- them =p.
-               envFunction :: Text -> TextFunction}
+               envFunction :: Text -> Exceptional TextFunction}
 
 -- |Pretty self-explanatory
 data Delimiters =
@@ -119,7 +120,7 @@ data DocumentPart
 -- |A function which either produces a result or demands more input
 data TextFunction
   = Result DocString (Either PandocError Pandoc)
-  | MoreInput DocString (Text -> TextFunction)
+  | MoreInput DocString (Text -> Exceptional TextFunction)
 
 -- *** Semantic aliases for 'Text'
 type DocString = Text
@@ -148,13 +149,13 @@ instance ToTextFunction (DocString, String) where
 instance ToTextFunction (DocString, Text) where
   toTextFunction (d, f) = Result d (readMarkdown def (T.unpack f))
 
-instance ToTextFunction t => ToTextFunction (DocString, (Text -> t)) where
+instance ToTextFunction t => ToTextFunction (DocString, (Text -> Exceptional t)) where
   toTextFunction (d, f) = 
-    MoreInput d (toTextFunction . f)
+    MoreInput d (fmap toTextFunction . f)
 
 -- |Wrapper around 'Text' instance
-instance ToTextFunction t => ToTextFunction (DocString, (String -> t)) where
+instance ToTextFunction t => ToTextFunction (DocString, (String -> Exceptional t)) where
   toTextFunction (d, f) = 
-    MoreInput d (toTextFunction . f . T.unpack)
+    MoreInput d (fmap toTextFunction . f . T.unpack)
 
 
