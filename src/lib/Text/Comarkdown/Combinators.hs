@@ -36,9 +36,9 @@ import Text.Pandoc
 
 -- |Attempt to compile a document into text. If it doesn't work, give back an
 -- error message.
-compile :: CompilerForm
-        -> Exceptional Pandoc
-compile compilerForm =
+compile' :: CompilerForm
+         => Exceptional Pandoc
+compile' compilerForm =
   fromEither (bimap mconcat mconcat (foldExceptional textParts))
   where textParts =
           for (cfParts compilerForm)
