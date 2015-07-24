@@ -144,6 +144,9 @@ instance ToTextFunction (DocString, Pandoc) where
 instance ToTextFunction (DocString, PandocError) where
   toTextFunction (d, f) = Result d (Left f)
 
+instance ToTextFunction (DocString, Either PandocError Pandoc) where
+  toTextFunction (d, f) = Result d f
+
 -- |Interpret resulting 'String' as markdown
 instance ToTextFunction (DocString, String) where
   toTextFunction (d, f) = Result d (readMarkdown def f)
@@ -151,6 +154,15 @@ instance ToTextFunction (DocString, String) where
 -- |Wrapper around instance with 'String's
 instance ToTextFunction (DocString, Text) where
   toTextFunction (d, f) = Result d (readMarkdown def (T.unpack f))
+
+instance ToTextFunction t => ToTextFunction (DocString, (Text -> t)) where
+  toTextFunction (d, f) = 
+    MoreInput d (Success . toTextFunction . f)
+
+-- |Wrapper around 'Text' instance
+instance ToTextFunction t => ToTextFunction (DocString, (String -> t)) where
+  toTextFunction (d, f) = 
+    MoreInput d (Success . toTextFunction . f . T.unpack)
 
 instance ToTextFunction t => ToTextFunction (DocString, (Text -> Exceptional t)) where
   toTextFunction (d, f) = 
