@@ -31,6 +31,7 @@ module Text.Comarkdown.Types
   where
 
 import Control.Exceptional
+import Control.Monad.State
 import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
@@ -39,6 +40,8 @@ import qualified Data.Text as T
 import Data.Vector (Vector)
 import Text.Pandoc (Pandoc, readMarkdown)
 import Text.Pandoc.Error (PandocError(..))
+
+type DocumentM x = StateT Document IO x
 
 -- |A more efficient representation of 'Document'; it does not include
 -- documentation, and thus is for use when compiling documents.
