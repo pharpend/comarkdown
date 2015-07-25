@@ -36,7 +36,6 @@ import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Vector (Vector)
 import Text.Pandoc (Pandoc, readMarkdown)
 import Text.Pandoc.Error (PandocError(..))
@@ -47,7 +46,7 @@ type DocumentM x = StateT Document IO x
 -- documentation, and thus is for use when compiling documents.
 data CompilerForm =
   CompilerForm {cfCommands :: HashMap CommandName TextFunction
-               ,cfEnvironments :: HashMap EnvironmentName (Text -> Exceptional TextFunction)
+               ,cfEnvironments :: HashMap EnvironmentName (Text -> TextFunction)
                ,cfDelimiters :: Delimiters
                ,cfParts :: Vector DocumentPart}
 
@@ -78,25 +77,34 @@ toCf doc =
 data Command =
   Command   -- |This should not include the prefix (usually a backslash).
    {cmdPrimary :: CommandName
-   ,
     -- |Ditto for these
-    cmdAliases :: Vector CommandName
+   ,cmdAliases :: Vector CommandName
    ,cmdDoc :: DocString
+   ,cmdArguments :: Arguments
    ,cmdFunction :: TextFunction}
-   
+
+-- |Arguments
+data Argument =
+  Argument {argumentName :: Text
+           ,argumentDocumentation :: DocString
+           ,argumentDefault :: Maybe Text}
+
+type Arguments = Vector Argument
+type ArgumentMap = HashMap Text Text
+
 -- |An environment is a bit more involved
 data Environment =
   Environment {envPrimary :: EnvironmentName
               ,envAliases :: Vector EnvironmentName
               ,envDoc :: DocString
-              ,
+              ,envArguments :: Arguments
                -- |An environment *must* have some input. I.e. it has to do
                -- something with the stuff between @\begin{environment}@ and
                -- @\end{environment}@.
                --
                -- It can optionally require more arguments, but it must document
                -- them =p.
-               envFunction :: Text -> Exceptional TextFunction}
+              ,envFunction :: Text -> TextFunction}
 
 -- |Pretty self-explanatory
 data Delimiters =
@@ -116,61 +124,15 @@ instance Default Delimiters where
 data DocumentPart
   = Comment Text
   | Ignore Text
-  | CommandCall CommandName (Vector Text)
-  | EnvironmentCall EnvironmentName Text (Vector Text)
+  | CommandCall CommandName ArgumentMap
+  | EnvironmentCall EnvironmentName Text ArgumentMap
   deriving (Eq, Show)
 
--- |A function which either produces a result or demands more input
-data TextFunction
-  = Result DocString (Either PandocError Pandoc)
-  | MoreInput DocString (Text -> Exceptional TextFunction)
+-- |A text function
+type TextFunction = ArgumentMap -> Exceptional Text
 
 -- *** Semantic aliases for 'Text'
 type DocString = Text
 type CommandName = Text
 type EnvironmentName = Text
 type MarkdownText = Text
-
--- |Yay overloading!
-class ToTextFunction a where
-  toTextFunction :: a -> TextFunction
-
-instance ToTextFunction TextFunction where
-  toTextFunction = id
-
-instance ToTextFunction (DocString, Pandoc) where
-  toTextFunction (d, f) = Result d (Right f)
-
-instance ToTextFunction (DocString, PandocError) where
-  toTextFunction (d, f) = Result d (Left f)
-
-instance ToTextFunction (DocString, Either PandocError Pandoc) where
-  toTextFunction (d, f) = Result d f
-
--- |Interpret resulting 'String' as markdown
-instance ToTextFunction (DocString, String) where
-  toTextFunction (d, f) = Result d (readMarkdown def f)
-
--- |Wrapper around instance with 'String's
-instance ToTextFunction (DocString, Text) where
-  toTextFunction (d, f) = Result d (readMarkdown def (T.unpack f))
-
-instance ToTextFunction t => ToTextFunction (DocString, (Text -> t)) where
-  toTextFunction (d, f) = 
-    MoreInput d (Success . toTextFunction . f)
-
--- |Wrapper around 'Text' instance
-instance ToTextFunction t => ToTextFunction (DocString, (String -> t)) where
-  toTextFunction (d, f) = 
-    MoreInput d (Success . toTextFunction . f . T.unpack)
-
-instance ToTextFunction t => ToTextFunction (DocString, (Text -> Exceptional t)) where
-  toTextFunction (d, f) = 
-    MoreInput d (fmap toTextFunction . f)
-
--- |Wrapper around 'Text' instance
-instance ToTextFunction t => ToTextFunction (DocString, (String -> Exceptional t)) where
-  toTextFunction (d, f) = 
-    MoreInput d (fmap toTextFunction . f . T.unpack)
-
-
