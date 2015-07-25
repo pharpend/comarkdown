@@ -118,23 +118,44 @@ commandCall =
 
 -- Parse arguments within the delimiters. This also parses the open and close
 -- braces
-args :: DocParseM (Vector Text)
+args :: DocParseM (Vector MKV)
 args =
   label' "arguments in brackets" $
   do bracketStart'
      args'
-  where args' =
+  where val :: DocParseM Text
+        val =
           do firstChar <- anyChar
              restOfChars <-
                manyTill anyChar (try bracketSep' <|> try bracketEnd')
-             let thisArg = T.pack (firstChar : restOfChars)
+             return T.pack (firstChar : restOfChars)
+        args' :: DocParseM Vector MKV
+        args' =
+          do key <-
+               optionMaybe
+                 (do firstChar <- anyChar
+                     restOfChars <- manyTill anyChar (space <|> char '=')
+                     char '='
+                     return (T.pack (firstChar : restOfChars)))
+             val' <- val
              -- If there's a comma, parse more stuff
              rest <-
-               try (do bracketSep'
-                       args')
+               optionMaybe
+                 (do bracketSep'
+                     args')
              -- Otherwise, we're done
              bracketEnd'
-             return (V.cons thisArg rest)
+             return (V.cons (case key of
+                               Nothing -> Positional val'
+                               Just x -> WithKey x val')
+                            (case rest of
+                               Nothing -> mempty
+                               Just x -> x))
+
+data MKV
+  = Positional Text
+  | WithKey Text
+            Text
 
 -- |Parse an explicit ignore block
 explicitIgnore :: DocParseM DocumentPart
