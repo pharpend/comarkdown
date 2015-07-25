@@ -124,10 +124,15 @@ instance Default Delimiters where
 data DocumentPart
   = Comment Text
   | Ignore Text
-  | CommandCall CommandName ArgumentMap
-  | EnvironmentCall EnvironmentName Text ArgumentMap
+  | CommandCall CommandName (Vector MKV)
+  | EnvironmentCall EnvironmentName Text (Vector MKV)
   deriving (Eq, Show)
 
+
+data MKV
+  = Positional Text
+  | WithKey Text Text
+  deriving (Eq, Show)
 -- |A text function
 type TextFunction = ArgumentMap -> Exceptional Text
 

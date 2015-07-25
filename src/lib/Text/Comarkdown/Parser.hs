@@ -128,8 +128,8 @@ args =
           do firstChar <- anyChar
              restOfChars <-
                manyTill anyChar (try bracketSep' <|> try bracketEnd')
-             return T.pack (firstChar : restOfChars)
-        args' :: DocParseM Vector MKV
+             return (T.pack (firstChar : restOfChars))
+        args' :: DocParseM (Vector MKV)
         args' =
           do key <-
                optionMaybe
@@ -151,11 +151,6 @@ args =
                             (case rest of
                                Nothing -> mempty
                                Just x -> x))
-
-data MKV
-  = Positional Text
-  | WithKey Text
-            Text
 
 -- |Parse an explicit ignore block
 explicitIgnore :: DocParseM DocumentPart
