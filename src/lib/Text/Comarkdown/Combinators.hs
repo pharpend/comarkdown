@@ -97,11 +97,11 @@ compile' compilerForm =
                                      (T.unpack txt) of
                      Left pde -> fail (mconcat ["Pandoc error: ",show pde])
                      Right pd -> return pd
-                 CommandCall cmdnom args' ->
+                 CommandCall cmdnom mkvs ->
                    case H.lookup cmdnom (cfCommands compilerForm) of
-                     Just cmd -> applyTextFunction cmdnom cmd args'
                      Nothing ->
                        fail (mappend "Command not found: " (T.unpack cmdnom))
+                     Just (cmd :: Command) -> applyTextFunction cmdnom cmd mkvs
                  EnvironmentCall envnom txt args' ->
                    case H.lookup envnom (cfEnvironments compilerForm) of
                      Just env ->
@@ -110,38 +110,39 @@ compile' compilerForm =
                      Nothing ->
                        fail (mappend "Environment not found: " (T.unpack envnom)))
         for = flip fmap
-        applyTextFunction = applyTextFunction' 0
-        applyTextFunction' :: Int                -- Arity so far
-                           -> Text               -- Function name
-                           -> TextFunction       -- The function
-                           -> Vector Text        -- Arguments
-                           -> Exceptional Pandoc
-        applyTextFunction' i funname tf txts =
-          case (tf,txts !? 0) of
-            -- No more arguments to send, and we have a result, send back the
-            -- result
-            (Result _ x,Nothing) -> fromPandoc' x
-            -- More arguments to send, but have a result, fail with an arity
-            -- mismatch
-            (Result _ _,Just _) ->
-              fail (mconcat ["Arity mismatch in function: "
-                            ,T.unpack funname
-                            ,". Function has an arity of "
-                            ,show i
-                            ," but more arguments were supplied."])
-            -- No more arguments to send, but we don't have a result
-            (MoreInput _ _,Nothing) ->
-              fail (mconcat ["You did not send enough arguments to the function "
-                            ,T.unpack funname
-                            ,". Comarkdown functions have indeterminate arity, so I cannot tell you how many arguments you need to send, only that you have not sent enough."])
-            -- We don't have a result, but we do have more arguments to
-            -- send. Send them!
-            (MoreInput _ ttntf,Just x) ->
-              do newTF <- ttntf x
-                 applyTextFunction' (i + 1)
-                                    funname
-                                    newTF
-                                    (V.tail txts)
+        mkArgMap
+          :: Arguments -> Vector MKV -> Exceptional ArgumentMap
+        mkArgMap args mkvs =
+          case runStateT (do mkv <- mkvs
+                             args' <- get
+                             case mkv of
+                               Positional arg ->
+                                 case args' !? 0 of
+                                   -- If there aren't any arguments left, fail
+                                   Nothing ->
+                                     fail (mappend "Ran out of arguments on positional argument "
+                                                   (T.unpack arg))
+                                   Just x ->
+                                     do put (tail args')
+                                        return (H.singleton (argumentName x)
+                                                            arg)
+                               WithKey k v ->
+                                 case lookupArgs k args' of
+                                   Nothing ->
+                                     fail (mappend "No argument with the name " (T.unpack k))
+                                   Just arg ->
+                                     do put (deleteArg arg args)
+                                        return (H.singleton k v))
+                         args of
+            Failure s -> Failure s
+            Success (args'',x) ->
+              if not (V.null args'')
+                 then fmap (mappend x)
+                           (aplRem args'')
+                 else Success x
+        lookupArgs = undefined
+        deleteArg = undefined
+        aplRem = undefined
         fromPandoc'
           :: Either PandocError Pandoc -> Exceptional Pandoc
         fromPandoc' = fromEither . first show
