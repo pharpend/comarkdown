@@ -36,7 +36,9 @@ import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
-import Data.Vector (Vector)
+import Data.Traversable (for)
+import Data.Vector (Vector, (!?))
+import qualified Data.Vector as V
 import Text.Pandoc (Pandoc, readMarkdown)
 import Text.Pandoc.Error (PandocError(..))
 
@@ -88,6 +90,7 @@ data Argument =
   Argument {argumentName :: Text
            ,argumentDocumentation :: DocString
            ,argumentDefault :: Maybe Text}
+  deriving (Eq, Show)
 
 type Arguments = Vector Argument
 type ArgumentMap = HashMap Text Text
@@ -128,7 +131,8 @@ data DocumentPart
   | EnvironmentCall EnvironmentName Text (Vector MKV)
   deriving (Eq, Show)
 
-
+-- |The type for arguments in function calls. This will later be marshaled into
+-- an 'ArgumentMap'.
 data MKV
   = Positional Text
   | WithKey Text Text
@@ -136,6 +140,63 @@ data MKV
 
 -- |A text function
 type TextFunction = ArgumentMap -> Exceptional Text
+
+-- Marshal a bunch of 'MKV's into an 'ArgumentMap', using the given 'Arguments'
+-- as a reference.
+mkArgMap :: Vector MKV -> Arguments -> Exceptional ArgumentMap
+mkArgMap mkvs args' =
+  do (result,(_,remainingArguments)) <-
+       runStateT (do texts <- traverse mkHashMapEntry mkvs
+                     return (foldMap (uncurry H.singleton) texts))
+                 (0,args')
+     rest <-
+       for remainingArguments
+           (\arg ->
+              case argumentDefault arg of
+                Nothing ->
+                  fail (mappend "Unbound argument with no default: " (show arg))
+                Just x ->
+                  return (H.singleton (argumentName arg)
+                                      x))
+     return (mappend result (foldMap id rest))
+  where mkHashMapEntry :: MKV -> StateT (Int,Arguments) Exceptional (Text,Text)
+        mkHashMapEntry =
+          \case
+            -- If we are given a positional argument, consume the leading
+            -- argument in the Arguments, assign the appropriate kv pair,
+            -- then continue.
+            Positional value ->
+              do (i,args'') <- get
+                 case args'' !? 0 of
+                   -- If there aren't any arguments left to consume, then send an error message
+                   Nothing ->
+                     lift (Failure (mconcat ["Too many positional arguments sent to the function! I got at least "
+                                            ,show i
+                                            ," (counting starts at 0)."]))
+                   -- If there is an argument, consume it, assign the appropriate KV pair, and increment the counter
+                   Just arg ->
+                     do put (i + 1,V.tail args'')
+                        pure (argumentName arg,value)
+            -- If there is a key-value pair, assign the key-value pair. If an
+            -- argument with that key happens to be listed in the Arguments,
+            -- kindly remove it.
+            --
+            -- The reasons we don't throw errors if the key does not appear in the
+            -- list of Arguments:
+            --
+            --   * This allows the user to override a positional value with a key-value pair
+            --   * This allows the user to send arbitrary key-values to the function
+            --   * This allows the user to specify an argument out-of-position
+            WithKey k v ->
+              do (i,args'') <- get
+                 case V.findIndex ((== k) . argumentName)
+                                  args'' of
+                   Nothing -> return ()
+                   Just x ->
+                     put (i
+                         ,mappend (V.take x args'')
+                                  (V.drop (x + 1) args''))
+                 pure (k,v)
 
 -- *** Semantic aliases for 'Text'
 type DocString = Text
