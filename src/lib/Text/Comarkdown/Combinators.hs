@@ -20,17 +20,19 @@
 -- Stability   : experimental
 -- Portability : portable
 
-module Text.Comarkdown.Combinators where
+module Text.Comarkdown.Combinators
+       ((!), module Text.Comarkdown.Combinators) where
 
 import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
-import Control.Monad.IO.Class
 import Control.Monad.State
 import Data.Bifunctor
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import Data.Hashable (Hashable(..))
+import Data.HashMap.Lazy (HashMap, (!))
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -38,6 +40,21 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec
 import Text.Pandoc
+
+-- * Missing operators from other modules
+
+-- |Alias for 'mappend'
+infixl 5 <+>
+(<+>) :: Monoid m => m -> m -> m
+(<+>) = mappend
+
+-- |Alias for 'H.lookup'
+infixl 6 ~?
+(~?) :: (Eq k,Hashable k)
+     => HashMap k v -> k -> Maybe v
+h ~? k = H.lookup k h
+
+-- * Comarkdown combinators!
 
 -- |Parse a ByteString into the current document.
 -- 
