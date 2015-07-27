@@ -47,8 +47,8 @@ type DocumentM x = StateT Document IO x
 -- |A more efficient representation of 'Document'; it does not include
 -- documentation, and thus is for use when compiling documents.
 data CompilerForm =
-  CompilerForm {cfCommands :: HashMap CommandName TextFunction
-               ,cfEnvironments :: HashMap EnvironmentName (Text -> TextFunction)
+  CompilerForm {cfCommands :: HashMap CommandName Command
+               ,cfEnvironments :: HashMap EnvironmentName Environment
                ,cfDelimiters :: Delimiters
                ,cfParts :: Vector DocumentPart}
 
@@ -65,12 +65,12 @@ toCf doc =
   CompilerForm {cfCommands =
                   foldMap (\cmd ->
                              H.singleton (cmdPrimary cmd)
-                                         (cmdFunction cmd))
+                                         cmd)
                           (definedCommands doc)
                ,cfEnvironments =
                   foldMap (\env ->
                              H.singleton (envPrimary env)
-                                         (envFunction env))
+                                         env)
                           (definedEnvironments doc)
                ,cfDelimiters = delimiters doc
                ,cfParts = docParts doc}

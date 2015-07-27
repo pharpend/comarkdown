@@ -32,9 +32,8 @@ import Data.Bifunctor
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.HashMap.Lazy as H
-import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Vector (Vector, (!?))
+import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec
 import Text.Pandoc
@@ -128,11 +127,9 @@ compile' compilerForm =
                 Nothing ->
                   fail (mappend "Command not found: " (T.unpack cmdnom))
                 -- If it does exist, then attempt to run the command call
-                Just command ->
-                  do let commandArguments = cmdArguments command
-                         commandFunction = cmdFunction command
-                     argumentMap <- mkArgMap mkvs commandArguments
-                     resultingText <- cmdFunction argumentMap
+                Just cmd ->
+                  do argumentMap <- mkArgMap mkvs (cmdArguments cmd)
+                     resultingText <- cmdFunction cmd argumentMap
                      fromPandoc'
                        (readMarkdown def
                                      (T.unpack resultingText))
@@ -145,7 +142,7 @@ compile' compilerForm =
                   fail (mappend "Environment not found: " (T.unpack envnom))
                 Just env ->
                   do argumentMap <- mkArgMap mkvs (envArguments env)
-                     resultingText <- envFunction txt argumentMap
+                     resultingText <- envFunction env txt argumentMap
                      fromPandoc'
                        (readMarkdown def
                                      (T.unpack resultingText))
@@ -200,51 +197,51 @@ newCommand primaryName alternateNames commandDocumentation commandArguments comm
                            ,". They are all listed here:"
                            ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
 
--- |This creates a environment. This will error out if the environment already exists.
-newEnvironment :: MonadState Document m
-               => EnvironmentName
-               -> [EnvironmentName]
-               -> DocString
-               -> [Argument]
-               -> (Text -> TextFunction)
-               -> m ()
-newEnvironment primaryName alternateNames environmentDocumentation environmentArguments environmentFunction =
-  do oldState <- get
-     let newcmd =
-           Environment primaryName
-                       (V.fromList alternateNames)
-                       environmentDocumentation
-                       environmentArguments
-                       environmentFunction
-         oldcmds = definedEnvironments oldState
-         -- Form a uniform list of all of the existing aliases and primary
-         -- environment names.
-         oldTokens =
-           foldl (\stuff cmd ->
-                    mappend stuff
-                            (V.cons (cmdPrimary cmd)
-                                    (cmdAliases cmd)))
-                 mempty
-                 oldcmds
-         -- Check to make sure neither the primary environment name or the aliases
-         -- are already in use. This collects the error messages.
-         errorMessages =
-           foldl (\accum token' ->
-                    if token' `elem` oldTokens
-                        then V.snoc accum
-                                   (mappend (T.unpack token')
-                                            " is already in use by another environment.")
-                       else accum)
-                 mempty
-                 (V.cons (cmdPrimary newcmd)
-                         (cmdAliases newcmd))
-     -- If we don't have any error messages, then continue on
-     if V.null errorMessages
-        then put (oldState {definedEnvironments = V.cons newcmd oldcmds})
-        else
-             -- Otherwise, fail
-             fail
-               (mconcat ["There were errors while trying to make the environment "
-                        ,T.unpack (cmdPrimary newcmd)
-                        ,". They are all listed here:"
-                        ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
+-- -- |This creates a environment. This will error out if the environment already exists.
+-- newEnvironment :: MonadState Document m
+--                => EnvironmentName
+--                -> [EnvironmentName]
+--                -> DocString
+--                -> [Argument]
+--                -> (Text -> TextFunction)
+--                -> m ()
+-- newEnvironment primaryName alternateNames environmentDocumentation environmentArguments environmentFunction =
+--   do oldState <- get
+--      let newcmd =
+--            Environment primaryName
+--                        (V.fromList alternateNames)
+--                        environmentDocumentation
+--                        environmentArguments
+--                        environmentFunction
+--          oldcmds = definedEnvironments oldState
+--          -- Form a uniform list of all of the existing aliases and primary
+--          -- environment names.
+--          oldTokens =
+--            foldl (\stuff cmd ->
+--                     mappend stuff
+--                             (V.cons (cmdPrimary cmd)
+--                                     (cmdAliases cmd)))
+--                  mempty
+--                  oldcmds
+--          -- Check to make sure neither the primary environment name or the aliases
+--          -- are already in use. This collects the error messages.
+--          errorMessages =
+--            foldl (\accum token' ->
+--                     if token' `elem` oldTokens
+--                         then V.snoc accum
+--                                    (mappend (T.unpack token')
+--                                             " is already in use by another environment.")
+--                        else accum)
+--                  mempty
+--                  (V.cons (cmdPrimary newcmd)
+--                          (cmdAliases newcmd))
+--      -- If we don't have any error messages, then continue on
+--      if V.null errorMessages
+--         then put (oldState {definedEnvironments = V.cons newcmd oldcmds})
+--         else
+--              -- Otherwise, fail
+--              fail
+--                (mconcat ["There were errors while trying to make the environment "
+--                         ,T.unpack (cmdPrimary newcmd)
+--                         ,". They are all listed here:"
+--                         ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])

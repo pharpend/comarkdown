@@ -22,35 +22,35 @@
 
 module Text.Comarkdown.Stdlib where
 
-import Control.Exceptional
-import Data.Default
-import Data.Text (Text)
-import qualified Data.Text as T
-import Text.Comarkdown.Combinators
-import Text.Comarkdown.Types
+-- import Control.Exceptional
+-- import Data.Default
+-- import Data.Text (Text)
+-- import qualified Data.Text as T
+-- import Text.Comarkdown.Combinators
+-- import Text.Comarkdown.Types
 
-infixl 5 <+>
-(<+>) :: Monoid m => m -> m -> m
-(<+>) = mappend
+-- infixl 5 <+>
+-- (<+>) :: Monoid m => m -> m -> m
+-- (<+>) = mappend
 
-stdlib :: DocumentM (Exceptional ())
-stdlib =
-  do newCommand "bold-face"
-                ["bf","xtb"]
-                "Put something in bold-face"
-                (pck "Text to italicize" (\x -> result $ "**" <+> x <+> "**"))
-     newCommand "italic"
-                ["it","xti"]
-                "Put something in italic"
-                (pck "Text to italicize" (\x -> result $ "*" <+> x <+> "*"))
-     newEnvironment
-       "ignore"
-       []
-       "Ignore this stuff"
-       (\x -> Success (pck "Text to ignore (or rather, insert literally." x))
-  where result
-          :: Text -> (DocString,Either PandocError Pandoc)
-        result x = ("result",md x)
-        pck :: DocString -> x -> (DocString, x)
-        pck x y = (x,y)
-        md = readMarkdown def . T.unpack
+-- stdlib :: DocumentM (Exceptional ())
+-- stdlib =
+--   do newCommand "bold-face"
+--                 ["bf","xtb"]
+--                 "Put something in bold-face"
+--                 (pck "Text to italicize" (\x -> result $ "**" <+> x <+> "**"))
+--      newCommand "italic"
+--                 ["it","xti"]
+--                 "Put something in italic"
+--                 (pck "Text to italicize" (\x -> result $ "*" <+> x <+> "*"))
+--      newEnvironment
+--        "ignore"
+--        []
+--        "Ignore this stuff"
+--        (\x -> Success (pck "Text to ignore (or rather, insert literally." x))
+--   where result
+--           :: Text -> (DocString,Either PandocError Pandoc)
+--         result x = ("result",md x)
+--         pck :: DocString -> x -> (DocString, x)
+--         pck x y = (x,y)
+--         md = readMarkdown def . T.unpack
