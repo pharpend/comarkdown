@@ -22,35 +22,23 @@
 
 module Text.Comarkdown.Stdlib where
 
--- import Control.Exceptional
--- import Data.Default
--- import Data.Text (Text)
--- import qualified Data.Text as T
--- import Text.Comarkdown.Combinators
--- import Text.Comarkdown.Types
+import Text.Comarkdown.Combinators
+import Text.Comarkdown.Types
 
--- infixl 5 <+>
--- (<+>) :: Monoid m => m -> m -> m
--- (<+>) = mappend
-
--- stdlib :: DocumentM (Exceptional ())
--- stdlib =
---   do newCommand "bold-face"
---                 ["bf","xtb"]
---                 "Put something in bold-face"
---                 (pck "Text to italicize" (\x -> result $ "**" <+> x <+> "**"))
---      newCommand "italic"
---                 ["it","xti"]
---                 "Put something in italic"
---                 (pck "Text to italicize" (\x -> result $ "*" <+> x <+> "*"))
---      newEnvironment
---        "ignore"
---        []
---        "Ignore this stuff"
---        (\x -> Success (pck "Text to ignore (or rather, insert literally." x))
---   where result
---           :: Text -> (DocString,Either PandocError Pandoc)
---         result x = ("result",md x)
---         pck :: DocString -> x -> (DocString, x)
---         pck x y = (x,y)
---         md = readMarkdown def . T.unpack
+stdlib :: DocumentM ()
+stdlib =
+  do newCommand "bold-face"
+                ["embolden","Emphasize","bf","xtb"]
+                "Put something in bold-face"
+                [Argument "txt" "The text to embolden" Nothing]
+                (\v -> pure (mconcat ["**",v ! "txt","**"]))
+     newCommand "italic"
+                ["italicize","emphasize","it","xti"]
+                "Put something in italic"
+                [Argument "txt" "The text to italicize" Nothing]
+                (\v -> pure (mconcat ["*",v ! "txt","*"]))
+     newEnvironment "ignore"
+                    []
+                    "Interpret everything in the environment literally. Note that this just bypasses any comarkdown macros in the text. It is still interpreted as normal markdown."
+                    []
+                    (\txt _ -> pure txt)
