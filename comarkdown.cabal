@@ -40,6 +40,7 @@ library
     , data-default
     , exceptional >=0.3
     , exceptions
+    , hashable
     , mtl
     , pandoc
     , parsec
