@@ -76,96 +76,102 @@ parseFile' doc fp =
   do contents <- B.readFile fp
      parse' doc fp contents
 
--- |Compile the current document
+-- |Attempt to take the current document and make a 'Pandoc' from it. There are
+-- a number of errors that could occur. For a version that catches errors, use
+-- 'compile\''.
 -- 
 -- > compile = fmap toCf get >>= runExceptional . compile'
 compile :: MonadState Document m => m Pandoc
 compile = fmap toCf get >>= runExceptional . compile' 
 
--- |Attempt to compile a document into text. If it doesn't work, give back an
--- error message.
+-- |Attempt to take the given 'CompilerForm' and produce a 'Pandoc' from it.
+-- 
+-- There are a number of errors that can occur:
+-- 
+-- * Pandoc could produce some sort of parser error.
+-- 
+-- * There could be a call to a command or environment that doesn't exist, in
+-- which case an error is thrown.
+-- 
+-- * There could be an arity error in a command/environment call. This would
+-- include a required argument that was not supplied.
+-- 
+-- * There could be a value error with the command call
 compile' :: CompilerForm
          -> Exceptional Pandoc
 compile' compilerForm =
-  fromEither (bimap mconcat mconcat (foldExceptional textParts))
-  where textParts =
-          for (cfParts compilerForm)
-              (\case
-                 Comment _ -> return mempty
-                 Ignore txt ->
-                   case readMarkdown def
-                                     (T.unpack txt) of
-                     Left pde -> fail (mconcat ["Pandoc error: ",show pde])
-                     Right pd -> return pd
-                 CommandCall cmdnom mkvs ->
-                   case H.lookup cmdnom (cfCommands compilerForm) of
-                     Nothing ->
-                       fail (mappend "Command not found: " (T.unpack cmdnom))
-                     Just (cmd :: Command) -> applyTextFunction cmdnom cmd mkvs
-                 EnvironmentCall envnom txt args' ->
-                   case H.lookup envnom (cfEnvironments compilerForm) of
-                     Just env ->
-                       do txtf <- env txt
-                          applyTextFunction envnom txtf args'
-                     Nothing ->
-                       fail (mappend "Environment not found: " (T.unpack envnom)))
+  -- Concatenate the error messages or Pandocs, then produce an 'Exceptional'
+  -- value.
+  fromEither withErrorMessages
+  where withErrorMessages :: Either String Pandoc
+        withErrorMessages = bimap mconcat mconcat (foldExceptional textParts)
+        textParts :: Vector (Exceptional Pandoc)
+        textParts =
+          -- Loop through the parts that the parser found, perform case analysis
+          -- on them.
+          for (cfParts compilerForm) $
+          \case
+            -- If it's a comment, we don't want any output, so produce
+            -- 'mempty'
+            Comment _ -> return mempty
+            -- If it's text to be inserted literally (i.e. not macro-expanded
+            -- or whatever), then just send it straight to Pandoc
+            Ignore txt ->
+              fromPandoc'
+                (readMarkdown def
+                              (T.unpack txt))
+            -- If it's a command call...
+            CommandCall cmdnom mkvs ->
+              -- Lookup the command to make sure it exists...
+              case H.lookup cmdnom (cfCommands compilerForm) of
+                -- If the command doesn't exist, then throw an error
+                Nothing ->
+                  fail (mappend "Command not found: " (T.unpack cmdnom))
+                -- If it does exist, then attempt to run the command call
+                Just command ->
+                  do let commandArguments = cmdArguments command
+                         commandFunction = cmdFunction command
+                     argumentMap <- mkArgMap mkvs commandArguments
+                     resultingText <- cmdFunction argumentMap
+                     fromPandoc'
+                       (readMarkdown def
+                                     (T.unpack resultingText))
+            -- We're essentially doing the same thing with the environment call,
+            -- except the semantics are slightly different, because the minimum
+            -- arity is 1.
+            EnvironmentCall envnom txt mkvs ->
+              case H.lookup envnom (cfEnvironments compilerForm) of
+                Nothing ->
+                  fail (mappend "Environment not found: " (T.unpack envnom))
+                Just env ->
+                  do argumentMap <- mkArgMap mkvs (envArguments env)
+                     resultingText <- envFunction txt argumentMap
+                     fromPandoc'
+                       (readMarkdown def
+                                     (T.unpack resultingText))
         for = flip fmap
-        mkArgMap
-          :: Arguments -> Vector MKV -> Exceptional ArgumentMap
-        mkArgMap args mkvs =
-          case runStateT (do mkv <- mkvs
-                             args' <- get
-                             case mkv of
-                               Positional arg ->
-                                 case args' !? 0 of
-                                   -- If there aren't any arguments left, fail
-                                   Nothing ->
-                                     fail (mappend "Ran out of arguments on positional argument "
-                                                   (T.unpack arg))
-                                   Just x ->
-                                     do put (tail args')
-                                        return (H.singleton (argumentName x)
-                                                            arg)
-                               WithKey k v ->
-                                 case lookupArgs k args' of
-                                   Nothing ->
-                                     fail (mappend "No argument with the name " (T.unpack k))
-                                   Just arg ->
-                                     do put (deleteArg arg args)
-                                        return (H.singleton k v))
-                         args of
-            Failure s -> Failure s
-            Success (args'',x) ->
-              if not (V.null args'')
-                 then fmap (mappend x)
-                           (aplRem args'')
-                 else Success x
-        lookupArgs = undefined
-        deleteArg = undefined
-        aplRem = undefined
-        fromPandoc'
-          :: Either PandocError Pandoc -> Exceptional Pandoc
+        fromPandoc' :: Either PandocError Pandoc -> Exceptional Pandoc
         fromPandoc' = fromEither . first show
 
--- |This inserts a command into the document state. If such a command already
--- exists, it will return an error message.
--- 
--- Since: 0.1.0.0
-newCommand :: (MonadState Document m,ToTextFunction t)
+-- |This creates a command. This will error out if the command already exists.
+newCommand :: MonadState Document m
            => CommandName
            -> [CommandName]
            -> DocString
-           -> t
-           -> m (Exceptional ())
-newCommand prim als doc fn =
+           -> [Argument]
+           -> TextFunction
+           -> m ()
+newCommand primaryName alternateNames commandDocumentation commandArguments commandFunction =
   do oldState <- get
      let newcmd =
-           Command prim
-                   (V.fromList als)
-                   doc
-                   (toTextFunction fn)
+           Command primaryName
+                   (V.fromList alternateNames)
+                   commandDocumentation
+                   (V.fromList commandArguments)
+                   commandFunction
          oldcmds = definedCommands oldState
-         -- Test to see if any of cmd's tokens are a token of another command
+         -- Form a uniform list of all of the existing aliases and primary
+         -- command names.
          oldTokens =
            foldl (\stuff cmd ->
                     mappend stuff
@@ -173,6 +179,8 @@ newCommand prim als doc fn =
                                     (cmdAliases cmd)))
                  mempty
                  oldcmds
+         -- Check to make sure neither the primary command name or the aliases
+         -- are already in use. This collects the error messages.
          errorMessages =
            foldl (\accum token' ->
                     if token' `elem` oldTokens
@@ -183,54 +191,60 @@ newCommand prim als doc fn =
                  mempty
                  (V.cons (cmdPrimary newcmd)
                          (cmdAliases newcmd))
+     -- If we don't have any error messages, then continue on
      if V.null errorMessages
-        then Success <$>
-             put (oldState {definedCommands = V.cons newcmd oldcmds})
-        else return (Failure (mconcat ["There were errors while trying to make the command "
-                                      ,T.unpack (cmdPrimary newcmd)
-                                      ,". They are all listed here:"
-                                      ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
+        then put (oldState {definedCommands = V.cons newcmd oldcmds})
+        -- Otherwise, fail
+        else fail (mconcat ["There were errors while trying to make the command "
+                           ,T.unpack (cmdPrimary newcmd)
+                           ,". They are all listed here:"
+                           ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
 
--- |This defines an environment in the current document state. If such a environment already
--- exists, it will return an error message.
--- 
--- Since: 0.1.0.0
-newEnvironment :: (MonadState Document m,ToTextFunction t)
+-- |This creates a environment. This will error out if the environment already exists.
+newEnvironment :: MonadState Document m
                => EnvironmentName
                -> [EnvironmentName]
                -> DocString
-               -> (Text -> Exceptional t)
-               -> m (Exceptional ())
-newEnvironment prim als doc fn =
+               -> [Argument]
+               -> (Text -> TextFunction)
+               -> m ()
+newEnvironment primaryName alternateNames environmentDocumentation environmentArguments environmentFunction =
   do oldState <- get
-     let newenv =
-           Environment prim
-                       (V.fromList als)
-                       doc
-                       (fmap toTextFunction . fn)
-         oldenvs = definedEnvironments oldState
-         -- Test to see if any of env's tokens are a token of another environment
+     let newcmd =
+           Environment primaryName
+                       (V.fromList alternateNames)
+                       environmentDocumentation
+                       environmentArguments
+                       environmentFunction
+         oldcmds = definedEnvironments oldState
+         -- Form a uniform list of all of the existing aliases and primary
+         -- environment names.
          oldTokens =
-           foldl (\stuff env ->
+           foldl (\stuff cmd ->
                     mappend stuff
-                            (V.cons (envPrimary env)
-                                    (envAliases env)))
+                            (V.cons (cmdPrimary cmd)
+                                    (cmdAliases cmd)))
                  mempty
-                 oldenvs
+                 oldcmds
+         -- Check to make sure neither the primary environment name or the aliases
+         -- are already in use. This collects the error messages.
          errorMessages =
            foldl (\accum token' ->
                     if token' `elem` oldTokens
-                       then V.snoc accum
+                        then V.snoc accum
                                    (mappend (T.unpack token')
                                             " is already in use by another environment.")
                        else accum)
                  mempty
-                 (V.cons (envPrimary newenv)
-                         (envAliases newenv))
+                 (V.cons (cmdPrimary newcmd)
+                         (cmdAliases newcmd))
+     -- If we don't have any error messages, then continue on
      if V.null errorMessages
-        then Success <$>
-             put (oldState {definedEnvironments = V.cons newenv oldenvs})
-        else return (Failure (mconcat ["There were errors while trying to make the environment "
-                                      ,T.unpack (envPrimary newenv)
-                                      ,". They are all listed here:"
-                                      ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))]))
+        then put (oldState {definedEnvironments = V.cons newcmd oldcmds})
+        else
+             -- Otherwise, fail
+             fail
+               (mconcat ["There were errors while trying to make the environment "
+                        ,T.unpack (cmdPrimary newcmd)
+                        ,". They are all listed here:"
+                        ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
