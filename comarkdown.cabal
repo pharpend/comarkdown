@@ -19,8 +19,6 @@ cabal-version:       >=1.10
 extra-source-files:
   LICENSE
   README.md
-  src/tests/examples/*.comd
-  src/tests/examples/*.md
 
 library
   default-language:   Haskell2010
@@ -70,8 +68,6 @@ test-suite tests
     FlexibleInstances
     OverloadedStrings
   other-modules:
-    ExamplesSpec
-    NonsenseSpec
     Types
   build-depends:
       base
