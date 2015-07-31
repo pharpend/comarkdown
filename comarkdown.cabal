@@ -62,10 +62,9 @@ test-suite tests
   ghc-options:
     -Wall -threaded -fno-warn-orphans
   default-extensions:
+    FlexibleInstances
     LambdaCase
     OverloadedLists
-  other-extensions:
-    FlexibleInstances
     OverloadedStrings
   other-modules:
     TestTypes
