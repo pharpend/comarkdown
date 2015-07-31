@@ -32,6 +32,7 @@ module Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
+import Data.Aeson
 import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
@@ -50,7 +51,8 @@ data CompilerForm =
   CompilerForm {cfCommands :: HashMap CommandName Command
                ,cfEnvironments :: HashMap EnvironmentName Environment
                ,cfDelimiters :: Delimiters
-               ,cfParts :: Vector DocumentPart}
+               ,cfParts :: Vector DocumentPart
+               ,cfUserState :: Value}
 
 -- |The document has a list of definitions, as well as the document up to this
 -- point.
@@ -58,11 +60,12 @@ data Document =
   Document {definedCommands :: Vector Command
            ,definedEnvironments :: Vector Environment
            ,delimiters :: Delimiters
-           ,docParts :: Vector DocumentPart}
- 
+           ,docParts :: Vector DocumentPart
+           ,docUserState :: Value}
+
 -- |A document containing no definitions or parts, with the default delimiters
 nullDocument :: Document
-nullDocument = Document mempty mempty def mempty
+nullDocument = Document mempty mempty def mempty Null
 
 toCf :: Document -> CompilerForm
 toCf doc =
@@ -77,7 +80,8 @@ toCf doc =
                                          env)
                           (definedEnvironments doc)
                ,cfDelimiters = delimiters doc
-               ,cfParts = docParts doc}
+               ,cfParts = docParts doc
+               ,cfUserState = docUserState doc}
 
 -- |A command has a list of keywords, along with documentation.
 data Command =

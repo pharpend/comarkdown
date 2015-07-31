@@ -33,7 +33,9 @@ library
     RankNTypes
     Trustworthy
   build-depends:
-      base ==4.8.*
+      aeson
+    , base ==4.8.*
+    , bifunctors
     , bytestring
     , data-default
     , exceptional >=0.3
