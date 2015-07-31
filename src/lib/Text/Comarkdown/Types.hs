@@ -59,6 +59,10 @@ data Document =
            ,definedEnvironments :: Vector Environment
            ,delimiters :: Delimiters
            ,docParts :: Vector DocumentPart}
+ 
+-- |A document containing no definitions or parts, with the default delimiters
+nullDocument :: Document
+nullDocument = Document mempty mempty def mempty
 
 toCf :: Document -> CompilerForm
 toCf doc =
