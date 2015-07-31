@@ -12,7 +12,7 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : Types
+-- Module      : TestTypes
 -- Description : Helper newtypes for the test suite
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
@@ -20,7 +20,7 @@
 -- Stability   : experimental
 -- Portability : portable
 
-module Types where
+module TestTypes where
 
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.Text.Lazy as T

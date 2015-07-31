@@ -68,7 +68,7 @@ test-suite tests
     FlexibleInstances
     OverloadedStrings
   other-modules:
-    Types
+    TestTypes
   build-depends:
       base
     , bytestring
