@@ -39,7 +39,7 @@ import qualified Data.HashMap.Lazy as H
 import Data.Traversable (for)
 import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
-import Text.Pandoc (Pandoc, readMarkdown)
+import Text.Pandoc (Pandoc, readMarkdown, ReaderOptions)
 import Text.Pandoc.Error (PandocError(..))
 
 type DocumentM x = StateT Document IO x
@@ -51,7 +51,8 @@ data CompilerForm =
                ,cfEnvironments :: HashMap EnvironmentName Environment
                ,cfDelimiters :: Delimiters
                ,cfParts :: Vector DocumentPart
-               ,cfUserState :: Value}
+               ,cfUserState :: Value
+               ,cfOptions :: ReaderOptions}
 
 -- |The document has a list of definitions, as well as the document up to this
 -- point.
@@ -60,11 +61,12 @@ data Document =
            ,definedEnvironments :: Vector Environment
            ,delimiters :: Delimiters
            ,docParts :: Vector DocumentPart
-           ,docUserState :: Value}
+           ,docUserState :: Value
+           ,docOptions :: ReaderOptions}
 
 -- |A document containing no definitions or parts, with the default delimiters
 nullDocument :: Document
-nullDocument = Document mempty mempty def mempty Null
+nullDocument = Document mempty mempty def mempty Null def
 
 toCf :: Document -> CompilerForm
 toCf doc =
@@ -80,7 +82,8 @@ toCf doc =
                           (definedEnvironments doc)
                ,cfDelimiters = delimiters doc
                ,cfParts = docParts doc
-               ,cfUserState = docUserState doc}
+               ,cfUserState = docUserState doc
+               ,cfOptions = docOptions doc}
 
 -- |A command has a list of keywords, along with documentation.
 data Command =

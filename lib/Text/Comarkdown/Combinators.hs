@@ -45,6 +45,20 @@ infixl 5 <+>
 
 -- * Comarkdown combinators!
 
+-- |Parse a comarkdown file, then send the resulting file to Pandoc, write all
+-- of this as Markdown
+comdToMd :: FilePath -> IO String         
+comdToMd fp =                             
+  do pandoc <- runDocument $ parseFile fp
+     return (writeMarkdown def pandoc)       
+
+-- |Parse a comarkdown file, then send the resulting file to Pandoc, write all
+-- of this as plain-text
+comdToPlain :: FilePath -> IO String         
+comdToPlain fp =                             
+  do pandoc <- runDocument $ parseFile fp
+     return (writePlain def pandoc)       
+
 -- |Compile pure markdown text into a pandoc
 md :: String -> DocumentM Pandoc
 md s =
@@ -118,7 +132,7 @@ compile =
             -- or whatever), then just send it straight to Pandoc
             Ignore txt ->
               fromPandoc'
-                (readMarkdown def txt)
+                (readMarkdown (cfOptions compilerForm) txt)
             -- If it's a command call...
             CommandCall cmdnom mkvs ->
               -- Lookup the command to make sure it exists...
