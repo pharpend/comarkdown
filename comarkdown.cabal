@@ -71,19 +71,18 @@ test-suite tests
     OverloadedLists
     OverloadedStrings
   other-modules:
+    NoFormattingSpec
+    Paths_comarkdown
     TestTypes
   build-depends:
       base
+    , bifunctors
     , bytestring
     , comarkdown
-    , containers
-      -- needed for 'makeAbsolute'
-    , directory >=1.2.2.0
     , hspec
-    , parsec
+    , pandoc
     , QuickCheck
     , text
-    , vector
 
 source-repository head
   type:     git
