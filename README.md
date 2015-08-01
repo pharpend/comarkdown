@@ -20,9 +20,9 @@ at the moment is run `stack build` :/.
 
 ## Contact
 
-Bug reports: <https://github.com/pharpend/comarkdown/issues/new>
-Email: `peter@harpending.org`
-IRC: `pharpend` on FreeNode
+* Bug reports: <https://github.com/pharpend/comarkdown/issues/new>
+* Email: `peter@harpending.org`
+* IRC: `pharpend` on FreeNode
 
 [1]: http://www.pandoc.org/README.html#pandocs-markdown
 [2]: https://github.com/commercialhaskell/stack/
