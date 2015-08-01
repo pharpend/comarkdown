@@ -24,6 +24,7 @@ module Text.Comarkdown.Parser where
 
 import Text.Comarkdown.Types
 
+import Control.Monad.IO.Class
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec
@@ -44,11 +45,13 @@ documentParser =
                (case maybeFirst of
                   Nothing -> rest
                   Just fst' -> fst' : rest))
-  where interestingPart :: DocParseM DocumentPart
-        interestingPart =
-          try explicitIgnore <|> try lineComment <|> try blockComment <|>
-          try environmentCall <|>
-          try commandCall 
+
+-- |Everything but implicit Ignore blocks
+interestingPart :: DocParseM DocumentPart
+interestingPart =
+  try explicitIgnore <|> try lineComment <|> try blockComment <|>
+  try environmentCall <|>
+  try commandCall 
 
 -- |Parse a line comment.
 lineComment :: DocParseM DocumentPart
@@ -105,48 +108,17 @@ commandCall =
   do delims <- fmap delimiters getState
      string (commandPrefix delims)
      many space
-     -- Anything until a space
+     -- Anything until a space or bracket start
      fst' <- anyChar
-     rest <- manyTill anyChar (try space)
+     rest <- manyTill anyChar ((space >> pure ()) <|> lookAhead bracketStart')
      let cmdName = fst' : rest
-     args' <- args
-     return (CommandCall cmdName args')
-
--- Parse arguments within the delimiters. This also parses the open and close
--- braces
-args :: DocParseM (Vector MKV)
-args =
-  label' "arguments in brackets" $
-  do bracketStart'
-     args'
-  where val :: DocParseM String
-        val =
-          do firstChar <- anyChar
-             restOfChars <-
-               manyTill anyChar (try bracketSep' <|> try bracketEnd')
-             return (firstChar : restOfChars)
-        args' :: DocParseM (Vector MKV)
-        args' =
-          do key <-
-               optionMaybe
-                 (do firstChar <- anyChar
-                     restOfChars <- manyTill anyChar (space <|> char '=')
-                     char '='
-                     return (firstChar : restOfChars))
-             val' <- val
-             -- If there's a comma, parse more stuff
-             rest <-
-               optionMaybe
-                 (do bracketSep'
-                     args')
-             -- Otherwise, we're done
-             bracketEnd'
-             return (V.cons (case key of
-                               Nothing -> Positional val'
-                               Just x -> WithKey x val')
-                            (case rest of
-                               Nothing -> mempty
-                               Just x -> x))
+     args' <- many arg
+     return (CommandCall cmdName (V.fromList args'))
+  where arg = do many space
+                 bracketStart'
+                 foo <- manyTill anyChar bracketEnd'
+                 many space
+                 return (Positional foo)
 
 -- |Parse an explicit ignore block
 explicitIgnore :: DocParseM DocumentPart
