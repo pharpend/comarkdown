@@ -47,7 +47,9 @@ infixl 5 <+>
 
 -- |Compile pure markdown text into a pandoc
 md :: String -> DocumentM Pandoc
-md = fromPandoc' . readMarkdown def
+md s =
+  do opts <- fmap docOptions get
+     fromPandoc' (readMarkdown opts s)
 
 -- |Run a Document, return the resulting Pandoc
 runDocument :: DocumentM x -> IO Pandoc

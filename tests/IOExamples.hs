@@ -44,10 +44,6 @@ spec =
          specify (mconcat ["Compiling ",ip," matches ",op]) $
          do inputFile <- makeAbsolute (mappend dirPath ip)
             outputFile <- makeAbsolute (mappend dirPath op)
-            compiledInput <- runComd inputFile
+            compiledInput <- comdToMd inputFile
             output <- readFile outputFile
             compiledInput `shouldBe` output
-  where runComd :: FilePath -> IO String
-        runComd fp =
-          do pandoc <- runDocument $ parseFile fp
-             return (writePlain def pandoc)
