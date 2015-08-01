@@ -22,7 +22,10 @@
 
 module NoFormattingSpec where
 
+import Control.Monad (forM_)
+import Data.List (sort)
 import Paths_comarkdown
+import System.Directory
 import Test.Hspec
 import Text.Comarkdown
 
@@ -36,6 +39,17 @@ spec =
           comdResult <- runComd readmePath
           pdResult <- runPd readmePath
           comdResult `shouldBe` pdResult
+     describe "example files" $
+       do dirPath <- runIO $ makeAbsolute "src/tests/no-formatting-examples/"
+          dirContents <- runIO $ getDirectoryContents dirPath
+          let dirContents' = drop 2 (sort dirContents)
+          forM_ dirContents' $
+              \fp ->
+              specify fp $
+              do fp' <- makeAbsolute (mappend dirPath fp)
+                 comd' <- runComd fp'
+                 pd' <- runPd fp'
+                 comd' `shouldBe` pd'
   where runComd :: FilePath -> IO String
         runComd fp =
           do pandoc <- runDocument $ parseFile fp
