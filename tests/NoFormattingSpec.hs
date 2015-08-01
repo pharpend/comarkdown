@@ -24,7 +24,6 @@ module NoFormattingSpec where
 
 import Control.Monad (forM_)
 import Data.List (sort)
-import Paths_comarkdown
 import System.Directory
 import Test.Hspec
 import Text.Comarkdown
@@ -35,12 +34,12 @@ spec =
   describe "Parsing plain (i.e. no-comarkdown) documents" $
   describe "If a document has no comarkdown-specific formatting, running it through the comarkdown preprocessor should not change it" $
   do it "holds with the README" $
-       do readmePath <- getDataFileName "README.md"
+       do readmePath <- makeAbsolute "README.md"
           comdResult <- runComd readmePath
           pdResult <- runPd readmePath
           comdResult `shouldBe` pdResult
      describe "example files" $
-       do dirPath <- runIO $ makeAbsolute "src/tests/no-formatting-examples/"
+       do dirPath <- runIO $ makeAbsolute "tests/no-formatting-examples/"
           dirContents <- runIO $ getDirectoryContents dirPath
           let dirContents' = drop 2 (sort dirContents)
           forM_ dirContents' $
