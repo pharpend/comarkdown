@@ -23,6 +23,8 @@
 module NoFormattingSpec where
 
 import Control.Monad (forM_)
+import Data.Algorithm.Diff
+import Data.Algorithm.DiffOutput
 import Data.List (sort)
 import System.Directory
 import Test.Hspec
@@ -49,12 +51,21 @@ spec =
                  comd' <- runComd fp'
                  pd' <- runPd fp'
                  comd' `shouldBe` pd'
-  where runComd :: FilePath -> IO String
-        runComd fp =
-          do pandoc <- runDocument $ parseFile fp
-             return (writePlain def pandoc)
-        runPd :: FilePath -> IO String
-        runPd fp =
-          do fileContents <- readFile fp
-             let Right pandoc = readMarkdown def fileContents
-             return (writePlain def pandoc)
+
+runComd :: FilePath -> IO String
+runComd fp =
+  do pandoc <- runDocument $ parseFile fp
+     return (writePlain def pandoc)
+
+runPd :: FilePath -> IO String
+runPd fp =
+  do fileContents <- readFile fp
+     let Right pandoc = readMarkdown def fileContents
+     return (writePlain def pandoc)
+
+beginners :: IO ()
+beginners = 
+  do foo <- runComd "tests/no-formatting-examples/snowdrift-beginners.md"
+     bar <- runPd "tests/no-formatting-examples/snowdrift-beginners.md"
+     let baz = getGroupedDiff (lines foo) (lines bar)
+     putStrLn (ppDiff baz)

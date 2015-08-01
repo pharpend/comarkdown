@@ -36,7 +36,6 @@ import Data.Aeson
 import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
-import Data.Text (Text)
 import Data.Traversable (for)
 import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
@@ -91,17 +90,17 @@ data Command =
    ,cmdAliases :: Vector CommandName
    ,cmdDoc :: DocString
    ,cmdArguments :: Arguments
-   ,cmdFunction :: TextFunction}
+   ,cmdFunction :: StringFunction}
 
 -- |Arguments
 data Argument =
-  Argument {argumentName :: Text
+  Argument {argumentName :: String
            ,argumentDocumentation :: DocString
-           ,argumentDefault :: Maybe Text}
+           ,argumentDefault :: Maybe String}
   deriving (Eq, Show)
 
 type Arguments = Vector Argument
-type ArgumentMap = HashMap Text Text
+type ArgumentMap = HashMap String String
 
 -- |An environment is a bit more involved
 data Environment =
@@ -115,17 +114,17 @@ data Environment =
                --
                -- It can optionally require more arguments, but it must document
                -- them =p.
-              ,envFunction :: Text -> TextFunction}
+              ,envFunction :: String -> StringFunction}
 
 -- |Pretty self-explanatory
 data Delimiters =
-  Delimiters {commandPrefix :: Text
-             ,lineCommentPrefix :: Text
-             ,blockCommentPrefix :: Text
-             ,blockCommentSuffix :: Text
-             ,bracketStart :: Text
-             ,bracketEnd :: Text
-             ,bracketSep :: Text}
+  Delimiters {commandPrefix :: String
+             ,lineCommentPrefix :: String
+             ,blockCommentPrefix :: String
+             ,blockCommentSuffix :: String
+             ,bracketStart :: String
+             ,bracketEnd :: String
+             ,bracketSep :: String}
 
 -- |> Delimiters "\\" "//" "/*" "*/" "{" "}" ","
 instance Default Delimiters where
@@ -133,21 +132,21 @@ instance Default Delimiters where
 
 -- |The main type for the parser.
 data DocumentPart
-  = Comment Text
-  | Ignore Text
+  = Comment String
+  | Ignore String
   | CommandCall CommandName (Vector MKV)
-  | EnvironmentCall EnvironmentName Text (Vector MKV)
+  | EnvironmentCall EnvironmentName String (Vector MKV)
   deriving (Eq, Show)
 
 -- |The type for arguments in function calls. This will later be marshaled into
 -- an 'ArgumentMap'.
 data MKV
-  = Positional Text
-  | WithKey Text Text
+  = Positional String
+  | WithKey String String
   deriving (Eq, Show)
 
 -- |A text function
-type TextFunction = ArgumentMap -> DocumentM Pandoc
+type StringFunction = ArgumentMap -> DocumentM Pandoc
 
 -- Marshal a bunch of 'MKV's into an 'ArgumentMap', using the given 'Arguments'
 -- as a reference.
@@ -167,7 +166,7 @@ mkArgMap mkvs args' =
                   return (H.singleton (argumentName arg)
                                       x))
      return (mappend result (foldMap id rest))
-  where mkHashMapEntry :: MKV -> StateT (Int,Arguments) Exceptional (Text,Text)
+  where mkHashMapEntry :: MKV -> StateT (Int,Arguments) Exceptional (String,String)
         mkHashMapEntry =
           \case
             -- If we are given a positional argument, consume the leading
@@ -206,8 +205,8 @@ mkArgMap mkvs args' =
                                   (V.drop (x + 1) args''))
                  pure (k,v)
 
--- *** Semantic aliases for 'Text'
-type DocString = Text
-type CommandName = Text
-type EnvironmentName = Text
-type MarkdownText = Text
+-- *** Semantic aliases for 'String'
+type DocString = String
+type CommandName = String
+type EnvironmentName = String
+type MarkdownString = String

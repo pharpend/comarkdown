@@ -24,15 +24,12 @@ module Text.Comarkdown.Parser where
 
 import Text.Comarkdown.Types
 
-import Data.ByteString (ByteString)
-import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec
 
 -- |Convenient alias for the particular parser monad
-type DocParseM x = ParsecT ByteString Document IO x
+type DocParseM x = ParsecT String Document IO x
 
 -- |Try to parse a bunch of document parts from a ByteString
 documentParser :: DocParseM (Vector DocumentPart)
@@ -40,7 +37,7 @@ documentParser =
   label' "document" $
   do maybeFirst <- optionMaybe interestingPart
      rest <-
-       sepEndBy (fmap (Ignore . T.pack)
+       sepEndBy (fmap Ignore
                       (many1 anyChar))
                 interestingPart
      return (V.fromList
@@ -58,18 +55,18 @@ lineComment :: DocParseM DocumentPart
 lineComment =
   label' "line comment" $
   do dels <- fmap delimiters getState
-     text (lineCommentPrefix dels)
+     string (lineCommentPrefix dels)
      commentStr <- manyTill anyChar eol
-     return (Comment (T.pack commentStr))
+     return (Comment commentStr)
 
 -- |Parse a block comment
 blockComment :: DocParseM DocumentPart
 blockComment =
   label' "block comment" $
   do delims <- fmap delimiters getState
-     text (blockCommentPrefix delims)
-     commentStr <- manyTill anyChar (try (text (blockCommentSuffix delims)))
-     return (Comment (T.pack commentStr))
+     string (blockCommentPrefix delims)
+     commentStr <- manyTill anyChar (try (string (blockCommentSuffix delims)))
+     return (Comment commentStr)
 
 -- |Parse an environment call
 environmentCall :: DocParseM DocumentPart
@@ -81,25 +78,24 @@ environmentCall =
      return (EnvironmentCall envName envBody' envArgs)
   where beginEnv =
           do delims <- fmap delimiters getState
-             text (commandPrefix delims)
+             string (commandPrefix delims)
              many space
-             text "begin"
+             string "begin"
              many space
              bracketStart'
              envName <-
                label' "environment name" (manyTill anyChar (try bracketEnd'))
-             return (T.pack envName,mempty)
-        envBody :: Text -> DocParseM Text
+             return (envName,mempty)
+        envBody :: String -> DocParseM String
         envBody nom =
-          T.pack <$>
           manyTill anyChar
                    (try (do delims <- fmap delimiters getState
-                            text (commandPrefix delims)
+                            string (commandPrefix delims)
                             many space
-                            text "end"
+                            string "end"
                             many space
                             bracketStart'
-                            text nom
+                            string nom
                             bracketEnd'))
 
 -- |Parse a command call
@@ -107,12 +103,12 @@ commandCall :: DocParseM DocumentPart
 commandCall =
   label' "command call" $
   do delims <- fmap delimiters getState
-     text (commandPrefix delims)
+     string (commandPrefix delims)
      many space
      -- Anything until a space
      fst' <- anyChar
      rest <- manyTill anyChar (try space)
-     let cmdName = T.pack (fst' : rest)
+     let cmdName = fst' : rest
      args' <- args
      return (CommandCall cmdName args')
 
@@ -123,12 +119,12 @@ args =
   label' "arguments in brackets" $
   do bracketStart'
      args'
-  where val :: DocParseM Text
+  where val :: DocParseM String
         val =
           do firstChar <- anyChar
              restOfChars <-
                manyTill anyChar (try bracketSep' <|> try bracketEnd')
-             return (T.pack (firstChar : restOfChars))
+             return (firstChar : restOfChars)
         args' :: DocParseM (Vector MKV)
         args' =
           do key <-
@@ -136,7 +132,7 @@ args =
                  (do firstChar <- anyChar
                      restOfChars <- manyTill anyChar (space <|> char '=')
                      char '='
-                     return (T.pack (firstChar : restOfChars)))
+                     return (firstChar : restOfChars))
              val' <- val
              -- If there's a comma, parse more stuff
              rest <-
@@ -157,15 +153,15 @@ explicitIgnore :: DocParseM DocumentPart
 explicitIgnore =
   label' "explicit ignore" $
   do delims <- fmap delimiters getState
-     text (commandPrefix delims)
+     string (commandPrefix delims)
      many space
-     text "ignore"
+     string "ignore"
      ignoreThis <-
        manyTill anyChar
-                (try (do text (commandPrefix delims)
+                (try (do string (commandPrefix delims)
                          many space
-                         text "unignore"))
-     return (Ignore (T.pack ignoreThis))
+                         string "unignore"))
+     return (Ignore ignoreThis)
 
 -- * Helper functions
 
@@ -173,7 +169,7 @@ bracketStart' :: DocParseM ()
 bracketStart' =
   label' "start bracket" $
   do brs <- fmap (bracketStart . delimiters) getState
-     text brs
+     string brs
      many space
      return ()
 
@@ -182,7 +178,7 @@ bracketEnd' =
   label' "end bracket" $
   do many space
      brs <- fmap (bracketEnd . delimiters) getState
-     text brs
+     string brs
      return ()
 
 bracketSep' :: DocParseM ()
@@ -190,7 +186,7 @@ bracketSep' =
   label' "argument separator" $
   do many space
      brs <- fmap (bracketSep . delimiters) getState
-     text brs
+     string brs
      many space
      return ()
 
@@ -198,7 +194,7 @@ bracketSep' =
 eol :: DocParseM ()
 eol =
   label' "end of line" $
-  try_ (text "\r\n") <|> try_ (text "\r") <|> try_ (text "\n") <|> eof
+  try_ (string "\r\n") <|> try_ (string "\r") <|> try_ (string "\n") <|> eof
   where try_ x =
           do try x
              return ()
@@ -206,7 +202,3 @@ eol =
 -- |Same as 'label' with the arguments flipped
 label' :: String -> DocParseM a -> DocParseM a
 label' = flip label
-
--- |Wrapper around 'string'
-text :: Text -> DocParseM Text
-text = fmap T.pack . string . T.unpack

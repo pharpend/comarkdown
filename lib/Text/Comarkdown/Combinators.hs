@@ -28,12 +28,8 @@ import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as B
 import Data.HashMap.Lazy ((!))
 import qualified Data.HashMap.Lazy as H
-import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Traversable (for)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
@@ -50,8 +46,8 @@ infixl 5 <+>
 -- * Comarkdown combinators!
 
 -- |Compile pure markdown text into a pandoc
-md :: Text -> DocumentM Pandoc
-md = fromPandoc' . readMarkdown def . T.unpack
+md :: String -> DocumentM Pandoc
+md = fromPandoc' . readMarkdown def
 
 -- |Run a Document, return the resulting Pandoc
 runDocument :: DocumentM x -> IO Pandoc
@@ -61,20 +57,20 @@ runDocument d = do (pd, _) <- runStateT compileD nullDocument
           do d
              compile
 
--- |Parse a ByteString into the current document.
+-- |Parse a String into the current document.
 -- 
 -- The source name is required for error messages
 parse :: (MonadState Document m,MonadIO m)
-      => SourceName -> ByteString -> m ()
+      => SourceName -> String -> m ()
 parse sn bs =
   do doc <- get
      exceptionalDocument <- liftIO $ parse' doc sn bs
      mDocument <- runExceptional exceptionalDocument
      put mDocument
 
--- |Parse a ByteString, given an existing document (with definitions and stuff),
+-- |Parse a String, given an existing document (with definitions and stuff),
 -- the name of the source, and a Bytestring to parse.
-parse' :: Document -> SourceName -> ByteString -> IO (Exceptional Document)
+parse' :: Document -> SourceName -> String -> IO (Exceptional Document)
 parse' doc sn bs =
   runParserT documentParser doc sn bs >>=
   return .
@@ -95,7 +91,7 @@ parseFile fp =
 -- 'SourceName'
 parseFile' :: Document -> FilePath -> IO (Exceptional Document)
 parseFile' doc fp =
-  do contents <- B.readFile fp
+  do contents <- readFile fp
      parse' doc fp contents
 
 -- |Attempt to take the current document and make a 'Pandoc' from it. There are
@@ -120,15 +116,14 @@ compile =
             -- or whatever), then just send it straight to Pandoc
             Ignore txt ->
               fromPandoc'
-                (readMarkdown def
-                              (T.unpack txt))
+                (readMarkdown def txt)
             -- If it's a command call...
             CommandCall cmdnom mkvs ->
               -- Lookup the command to make sure it exists...
               case H.lookup cmdnom (cfCommands compilerForm) of
                 -- If the command doesn't exist, then throw an error
                 Nothing ->
-                  fail (mappend "Command not found: " (T.unpack cmdnom))
+                  fail (mappend "Command not found: " cmdnom)
                 -- If it does exist, then attempt to run the command call
                 Just cmd ->
                   do argumentMap <- runExceptional (mkArgMap mkvs (cmdArguments cmd))
@@ -139,7 +134,7 @@ compile =
             EnvironmentCall envnom txt mkvs ->
               case H.lookup envnom (cfEnvironments compilerForm) of
                 Nothing ->
-                  fail (mappend "Environment not found: " (T.unpack envnom))
+                  fail (mappend "Environment not found: " envnom)
                 Just env ->
                   do argumentMap <- runExceptional (mkArgMap mkvs (envArguments env))
                      envFunction env txt argumentMap
@@ -150,7 +145,7 @@ newCommand :: MonadState Document m
            -> [CommandName]
            -> DocString
            -> [Argument]
-           -> TextFunction
+           -> StringFunction
            -> m ()
 newCommand primaryName alternateNames commandDocumentation commandArguments commandFunction =
   do oldState <- get
@@ -176,7 +171,7 @@ newCommand primaryName alternateNames commandDocumentation commandArguments comm
            foldl (\accum token' ->
                     if token' `elem` oldTokens
                        then V.snoc accum
-                                   (mappend (T.unpack token')
+                                   (mappend token'
                                             " is already in use by another command.")
                        else accum)
                  mempty
@@ -187,7 +182,7 @@ newCommand primaryName alternateNames commandDocumentation commandArguments comm
         then put (oldState {definedCommands = V.cons newcmd oldcmds})
         -- Otherwise, fail
         else fail (mconcat ["There were errors while trying to make the command "
-                           ,T.unpack (cmdPrimary newcmd)
+                           ,cmdPrimary newcmd
                            ,". They are all listed here:"
                            ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
 
@@ -197,7 +192,7 @@ newEnvironment :: MonadState Document m
                -> [EnvironmentName]
                -> DocString
                -> [Argument]
-               -> (Text -> TextFunction)
+               -> (String -> StringFunction)
                -> m ()
 newEnvironment primaryName alternateNames environmentDocumentation environmentArguments environmentFunction =
   do oldState <- get
@@ -223,7 +218,7 @@ newEnvironment primaryName alternateNames environmentDocumentation environmentAr
            foldl (\accum token' ->
                     if token' `elem` oldTokens
                        then V.snoc accum
-                                   (mappend (T.unpack token')
+                                   (mappend token'
                                             " is already in use by another environment.")
                        else accum)
                  mempty
@@ -236,7 +231,7 @@ newEnvironment primaryName alternateNames environmentDocumentation environmentAr
              -- Otherwise, fail
              fail
                (mconcat ["There were errors while trying to make the environment "
-                        ,T.unpack (envPrimary newenv)
+                        ,envPrimary newenv
                         ,". They are all listed here:"
                         ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
 
