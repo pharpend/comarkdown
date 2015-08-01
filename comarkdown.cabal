@@ -54,6 +54,7 @@ library
   exposed-modules:
     Text.Comarkdown
     Text.Comarkdown.Combinators
+    Text.Comarkdown.Combinators.Primitives
     Text.Comarkdown.Parser
     Text.Comarkdown.Stdlib
     Text.Comarkdown.Types

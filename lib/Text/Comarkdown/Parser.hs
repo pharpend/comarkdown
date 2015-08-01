@@ -24,7 +24,6 @@ module Text.Comarkdown.Parser where
 
 import Text.Comarkdown.Types
 
-import Control.Monad.IO.Class
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec

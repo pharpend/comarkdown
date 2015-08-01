@@ -22,23 +22,41 @@
 
 module Text.Comarkdown.Stdlib where
 
-import Text.Comarkdown.Combinators
+import Text.Comarkdown.Combinators.Primitives
 import Text.Comarkdown.Types
 
+import Control.Monad.State
+import Data.HashMap.Lazy ((!))
+
+type NewCommand = DocumentM ()
+type NewEnvironment = DocumentM ()
+type Definition = DocumentM ()
+type Definitions = DocumentM ()
+
 stdlib :: DocumentM ()
-stdlib =
-  do newCommand "bold-face"
+stdlib = do boldFace
+            italic
+            ignore
+
+boldFace :: NewCommand
+boldFace = newCommand "bold-face"
                 ["embolden","Emphasize","bf","xtb"]
                 "Put something in bold-face"
                 [Argument "txt" "The text to embolden" Nothing]
                 (\v -> md (mconcat ["**",v ! "txt","**"]))
-     newCommand "italic"
-                ["italicize","emphasize","it","xti"]
-                "Put something in italic"
-                [Argument "txt" "The text to italicize" Nothing]
-                (\v -> md (mconcat ["*",v ! "txt","*"]))
-     newEnvironment "ignore"
-                    []
-                    "Interpret everything in the environment literally. Note that this just bypasses any comarkdown macros in the text. It is still interpreted as normal markdown."
-                    []
-                    (\txt _ -> md txt)
+
+italic :: NewCommand
+italic =
+  newCommand "italic"
+             ["italicize","emphasize","it","xti"]
+             "Put something in italic"
+             [Argument "txt" "The text to italicize" Nothing]
+             (\v -> md (mconcat ["*",v ! "txt","*"]))
+
+ignore :: NewEnvironment
+ignore =
+  newEnvironment "ignore"
+                 []
+                 "Interpret everything in the environment literally. Note that this just bypasses any comarkdown macros in the text. It is still interpreted as normal markdown."
+                 []
+                 (\txt _ -> md txt)
