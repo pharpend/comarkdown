@@ -19,6 +19,7 @@ cabal-version:       >=1.10
 extra-source-files:
   LICENSE
   README.md
+  tests/io-examples/*.md
   tests/no-formatting-examples/*.md
 
 library
@@ -70,6 +71,7 @@ test-suite tests
     OverloadedLists
     OverloadedStrings
   other-modules:
+    IOExamples
     NoFormattingSpec
     TestTypes
   build-depends:
