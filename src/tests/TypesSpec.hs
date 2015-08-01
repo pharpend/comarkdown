@@ -22,6 +22,8 @@
 
 module TypesSpec where
 
+import Test.Hspec
+
 spec :: Spec
 spec = 
   context "Text.Comarkdown.Types" $
@@ -32,4 +34,3 @@ spec_toCf =
   context "toCf function" $
   do it "should, given an otherwise empty document with an arbitary list of commands, produce a CompilerForm, where every one of those commands is a listed value of the cfCommands field." $
        pending
-     undefined
