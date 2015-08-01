@@ -71,7 +71,7 @@ test-suite tests
     OverloadedLists
     OverloadedStrings
   other-modules:
-    IOExamples
+    ExamplesSpec
     NoFormattingSpec
     TestTypes
   build-depends:

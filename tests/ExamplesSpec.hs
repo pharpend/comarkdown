@@ -12,7 +12,7 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -- | 
--- Module      : IOExamples
+-- Module      : ExamplesSpec
 -- Description : Runs the examples.
 -- Copyright   : Copyright 2015 Peter Harpending
 -- License     : GPL-3
@@ -20,11 +20,9 @@
 -- Stability   : experimental
 -- Portability : portable
 
-module IOExamples where
+module ExamplesSpec where
 
 import Control.Monad (forM_)
-import Data.Algorithm.Diff
-import Data.Algorithm.DiffOutput
 import Data.List (sort, isSuffixOf)
 import System.Directory
 import Test.Hspec

@@ -23,8 +23,6 @@
 module NoFormattingSpec where
 
 import Control.Monad (forM_)
-import Data.Algorithm.Diff
-import Data.Algorithm.DiffOutput
 import Data.List (sort)
 import System.Directory
 import Test.Hspec
