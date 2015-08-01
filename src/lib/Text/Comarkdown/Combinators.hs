@@ -28,14 +28,13 @@ import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
-import Data.Bifunctor
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import Data.Hashable (Hashable(..))
-import Data.HashMap.Lazy (HashMap, (!))
+import Data.HashMap.Lazy ((!))
 import qualified Data.HashMap.Lazy as H
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Traversable (for)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import Text.Parsec
@@ -48,13 +47,19 @@ infixl 5 <+>
 (<+>) :: Monoid m => m -> m -> m
 (<+>) = mappend
 
--- |Alias for 'H.lookup'
-infixl 6 ~?
-(~?) :: (Eq k,Hashable k)
-     => HashMap k v -> k -> Maybe v
-h ~? k = H.lookup k h
-
 -- * Comarkdown combinators!
+
+-- |Compile pure markdown text into a pandoc
+md :: Text -> DocumentM Pandoc
+md = fromPandoc' . readMarkdown def . T.unpack
+
+-- |Run a Document, return the resulting Pandoc
+runDocument :: DocumentM x -> IO Pandoc
+runDocument d = do (pd, _) <- runStateT compileD nullDocument
+                   return pd
+  where compileD =
+          do d
+             compile
 
 -- |Parse a ByteString into the current document.
 -- 
@@ -98,34 +103,14 @@ parseFile' doc fp =
 -- 'compile\''.
 -- 
 -- > compile = fmap toCf get >>= runExceptional . compile'
-compile :: MonadState Document m => m Pandoc
-compile = fmap toCf get >>= runExceptional . compile' 
-
--- |Attempt to take the given 'CompilerForm' and produce a 'Pandoc' from it.
--- 
--- There are a number of errors that can occur:
--- 
--- * Pandoc could produce some sort of parser error.
--- 
--- * There could be a call to a command or environment that doesn't exist, in
--- which case an error is thrown.
--- 
--- * There could be an arity error in a command/environment call. This would
--- include a required argument that was not supplied.
--- 
--- * There could be a value error with the command call
-compile' :: CompilerForm
-         -> Exceptional Pandoc
-compile' compilerForm =
-  -- Concatenate the error messages or Pandocs, then produce an 'Exceptional'
-  -- value.
-  fromEither withErrorMessages
-  where withErrorMessages :: Either String Pandoc
-        withErrorMessages = bimap mconcat mconcat (foldExceptional textParts)
-        textParts :: Vector (Exceptional Pandoc)
-        textParts =
-          -- Loop through the parts that the parser found, perform case analysis
-          -- on them.
+compile :: DocumentM Pandoc
+compile =
+  do cf <- fmap toCf get
+     parts <- runParts cf
+     return (foldl mappend mempty parts)
+  where runParts
+          :: CompilerForm -> DocumentM (Vector Pandoc)
+        runParts compilerForm =
           for (cfParts compilerForm) $
           \case
             -- If it's a comment, we don't want any output, so produce
@@ -146,11 +131,8 @@ compile' compilerForm =
                   fail (mappend "Command not found: " (T.unpack cmdnom))
                 -- If it does exist, then attempt to run the command call
                 Just cmd ->
-                  do argumentMap <- mkArgMap mkvs (cmdArguments cmd)
-                     resultingText <- cmdFunction cmd argumentMap
-                     fromPandoc'
-                       (readMarkdown def
-                                     (T.unpack resultingText))
+                  do argumentMap <- runExceptional (mkArgMap mkvs (cmdArguments cmd))
+                     cmdFunction cmd argumentMap
             -- We're essentially doing the same thing with the environment call,
             -- except the semantics are slightly different, because the minimum
             -- arity is 1.
@@ -159,14 +141,8 @@ compile' compilerForm =
                 Nothing ->
                   fail (mappend "Environment not found: " (T.unpack envnom))
                 Just env ->
-                  do argumentMap <- mkArgMap mkvs (envArguments env)
-                     resultingText <- envFunction env txt argumentMap
-                     fromPandoc'
-                       (readMarkdown def
-                                     (T.unpack resultingText))
-        for = flip fmap
-        fromPandoc' :: Either PandocError Pandoc -> Exceptional Pandoc
-        fromPandoc' = fromEither . first show
+                  do argumentMap <- runExceptional (mkArgMap mkvs (envArguments env))
+                     envFunction env txt argumentMap
 
 -- |This creates a command. This will error out if the command already exists.
 newCommand :: MonadState Document m
@@ -263,3 +239,11 @@ newEnvironment primaryName alternateNames environmentDocumentation environmentAr
                         ,T.unpack (envPrimary newenv)
                         ,". They are all listed here:"
                         ,mconcat (V.toList (fmap (mappend "\n    ") errorMessages))])
+
+-- |Internal function to switch from pandoc's error type into the DocumentM
+-- type.
+fromPandoc' :: Either PandocError Pandoc -> DocumentM Pandoc
+fromPandoc' =
+  \case
+    Left err -> fail (show err)
+    Right x -> return x

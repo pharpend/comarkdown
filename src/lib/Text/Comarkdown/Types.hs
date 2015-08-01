@@ -147,7 +147,7 @@ data MKV
   deriving (Eq, Show)
 
 -- |A text function
-type TextFunction = ArgumentMap -> Exceptional Text
+type TextFunction = ArgumentMap -> DocumentM Pandoc
 
 -- Marshal a bunch of 'MKV's into an 'ArgumentMap', using the given 'Arguments'
 -- as a reference.

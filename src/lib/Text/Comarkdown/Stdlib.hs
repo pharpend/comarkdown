@@ -31,14 +31,14 @@ stdlib =
                 ["embolden","Emphasize","bf","xtb"]
                 "Put something in bold-face"
                 [Argument "txt" "The text to embolden" Nothing]
-                (\v -> pure (mconcat ["**",v ! "txt","**"]))
+                (\v -> md (mconcat ["**",v ! "txt","**"]))
      newCommand "italic"
                 ["italicize","emphasize","it","xti"]
                 "Put something in italic"
                 [Argument "txt" "The text to italicize" Nothing]
-                (\v -> pure (mconcat ["*",v ! "txt","*"]))
+                (\v -> md (mconcat ["*",v ! "txt","*"]))
      newEnvironment "ignore"
                     []
                     "Interpret everything in the environment literally. Note that this just bypasses any comarkdown macros in the text. It is still interpreted as normal markdown."
                     []
-                    (\txt _ -> pure txt)
+                    (\txt _ -> md txt)
