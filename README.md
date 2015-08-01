@@ -14,9 +14,8 @@ source code.
     cd comarkdown
     stack build
 
-There isn't an executable, and the current test suite hasn't been
-rewritten to match a rewrite of the library. I'm afraid all you can do
-at the moment is run `stack build` :/.
+There isn't an executable yet, but you can run the test suite with
+`stack test`.
 
 ## Contact
 
