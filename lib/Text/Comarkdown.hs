@@ -19,6 +19,13 @@
 -- Maintainer  : peter@harpending.org
 -- Stability   : experimental
 -- Portability : portable
+-- 
+-- Note that this does not export "Text.Comarkdown.Stdlib", because of naming
+-- clashes with "Text.Comarkdown.Combinators".
+-- 
+-- For instance, the stdlib defines the @ignore@ environment in a function
+-- called @ignore@. The combinators module defines a function called @ignore@
+-- which inserts an @ignore@ block.
 
 module Text.Comarkdown 
   ( module Control.Exceptional
@@ -26,13 +33,11 @@ module Text.Comarkdown
   , module Text.Parsec
   , module Text.Comarkdown.Combinators
   , module Text.Comarkdown.Parser
-  , module Text.Comarkdown.Stdlib
   , module Text.Comarkdown.Types
   ) where
 
 import Text.Comarkdown.Combinators
 import Text.Comarkdown.Parser
-import Text.Comarkdown.Stdlib
 import Text.Comarkdown.Types
 
 import Control.Exceptional

@@ -25,7 +25,6 @@ module Text.Comarkdown.Stdlib where
 import Text.Comarkdown.Combinators.Primitives
 import Text.Comarkdown.Types
 
-import Control.Monad.State
 import Data.HashMap.Lazy ((!))
 
 type NewCommand = DocumentM ()

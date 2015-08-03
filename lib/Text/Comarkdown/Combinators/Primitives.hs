@@ -43,10 +43,7 @@ import Data.Vector (Vector)
 import qualified Data.Vector as V
 
 -- |Attempt to take the current document and make a 'Pandoc' from it. There are
--- a number of errors that could occur. For a version that catches errors, use
--- 'compile\''.
--- 
--- > compile = fmap toCf get >>= runExceptional . compile'
+-- a number of errors that could occur. 
 compile :: DocumentM Pandoc
 compile =
   do cf <- fmap toCf get

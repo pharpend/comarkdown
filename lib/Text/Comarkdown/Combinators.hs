@@ -27,13 +27,14 @@ module Text.Comarkdown.Combinators
   ) where
 
 import Text.Comarkdown.Combinators.Primitives
-import Text.Comarkdown.Stdlib
+import qualified Text.Comarkdown.Stdlib as L
 import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
 import Control.Monad.State
 import Data.HashMap.Lazy ((!))
+import qualified Data.Vector as V
 import Text.Parsec
 import Text.Pandoc
 
@@ -83,7 +84,7 @@ parseFile' doc fp =
 
 -- |Run the document including the 'stdlib'
 withStdlib :: DocumentM x -> DocumentM x
-withStdlib x = do stdlib
+withStdlib x = do L.stdlib
                   x
 
 -- |Wrapper around 'runDocument' and 'stdlib'
@@ -123,3 +124,17 @@ runDocument d = do (pd, _) <- runStateT compileD nullDocument
 --                               (V.cons (cmdPrimary cmd)
 --                                       (cmdAliases cmd)))
 --                    cmds)
+
+-- |Insert an 'Ignore' into the 'Document'
+ignore :: String -> DocumentM ()
+ignore = insertPart . Ignore
+
+-- |Insert a 'Comment' into the 'Document'
+comment :: String -> DocumentM ()
+comment = insertPart . Comment
+
+-- |Insert a 'DocumentPart' into the document
+insertPart :: DocumentPart -> DocumentM ()
+insertPart p =
+  do st <- get
+     put $ st {docParts = V.snoc (docParts st) p}
