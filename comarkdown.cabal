@@ -67,10 +67,12 @@ test-suite tests
   ghc-options:
     -Wall -threaded -fno-warn-orphans
   default-extensions:
+    FlexibleContexts
     FlexibleInstances
     LambdaCase
     OverloadedLists
     OverloadedStrings
+    ScopedTypeVariables
   other-modules:
     CompilerSpec
     ExamplesSpec
