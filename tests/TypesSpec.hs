@@ -22,7 +22,14 @@
 
 module TypesSpec where
 
+import Control.Monad
+import Control.Monad.IO.Class
+import Control.Monad.State
+import qualified Data.HashMap.Lazy as H
+import qualified Data.Vector as V
+import Text.Comarkdown
 import Test.Hspec
+-- import Test.QuickCheck
 
 spec :: Spec
 spec = 
@@ -32,5 +39,39 @@ spec =
 spec_toCf :: Spec
 spec_toCf =
   context "toCf function" $
-  do it "should, given an otherwise empty document with an arbitary list of commands, produce a CompilerForm, where every one of those commands is a listed value of the cfCommands field." $
-       pending
+  context "given list of commands, produce CF where cmds <- cfCommands" $
+  do specify "with stdlib" $
+       fmap fst $
+       flip runStateT nullDocument $
+       withStdlib $
+       do st <- get
+          forM_ (foldMap (\s ->
+                            V.cons (cmdPrimary s)
+                                   (cmdAliases s))
+                         (definedCommands st)) $
+            \c ->
+              liftIO $
+              shouldSatisfy c $ flip elem (H.keys (cfCommands (toCf st)))
+     specify "with a randomly generated list of commands" $
+       pendingWith "Test is a pain in the ass to write."
+       -- property $
+       -- \(foo :: [String],bar :: [[String]]) ->
+       --   (do let cmds = do (n,ns) <- zip foo bar
+       --                     return (Command n 
+       --                                     (V.fromList ns) 
+       --                                     mempty 
+       --                                     mempty 
+       --                                     (\_ -> fromPandoc' (readMarkdown def "Yay")))
+       --       _ <- runStateT ((do st <- get
+       --                           put (st { definedCommands = mappend (definedCommands st) 
+       --                                                               (V.fromList cmds)})
+       --                           let cmdKeys = H.keys (cfCommands (toCf st))
+       --                           liftIO $
+       --                             do shouldSatisfy foo (all (`elem` cmdKeys))
+       --                                forM_ bar $
+       --                                  \x -> shouldSatisfy x (all (`elem` cmdKeys))) 
+       --                       :: DocumentM ())
+       --                      nullDocument
+       --       return ()) :: IO ()
+
+

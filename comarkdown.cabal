@@ -78,6 +78,7 @@ test-suite tests
     ExamplesSpec
     NoFormattingSpec
     TestTypes
+    TypesSpec
   build-depends:
       base
     , bytestring
@@ -85,9 +86,12 @@ test-suite tests
     , Diff
     , directory
     , hspec
+    , mtl
     , pandoc
     , QuickCheck
-    , text
+    , transformers
+    , unordered-containers
+    , vector
 
 source-repository head
   type:     git
