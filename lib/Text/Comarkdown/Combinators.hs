@@ -113,3 +113,13 @@ runDocument d = do (pd, _) <- runStateT compileD nullDocument
           do d
              compile
 
+
+-- -- |Get a list of commands in the current document
+-- commandNames :: DocumentM (Vector String)
+-- commandNames =
+--   do cmds <- fmap definedCommands get
+--      return (foldMap (\accum cmd ->
+--                       mappend accum
+--                               (V.cons (cmdPrimary cmd)
+--                                       (cmdAliases cmd)))
+--                    cmds)

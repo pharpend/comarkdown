@@ -23,6 +23,8 @@
 module ExamplesSpec where
 
 import Control.Monad (forM_)
+import Data.Algorithm.Diff
+import Data.Algorithm.DiffOutput
 import Data.List (sort, isSuffixOf)
 import System.Directory
 import Test.Hspec
@@ -45,3 +47,11 @@ spec =
             compiledInput <- comdToMd inputFile
             output <- readFile outputFile
             compiledInput `shouldBe` output
+
+diffResults :: FilePath -> FilePath -> IO ()
+diffResults inputFile outputFile =
+  do compiledInput <- comdToMd inputFile
+     output <- readFile outputFile
+     let diff = getGroupedDiff (lines compiledInput)
+                               (lines output)
+     putStrLn (ppDiff diff)

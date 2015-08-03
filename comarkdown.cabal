@@ -79,6 +79,7 @@ test-suite tests
       base
     , bytestring
     , comarkdown
+    , Diff
     , directory
     , hspec
     , pandoc

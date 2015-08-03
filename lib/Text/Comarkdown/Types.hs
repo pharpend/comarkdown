@@ -72,13 +72,17 @@ toCf :: Document -> CompilerForm
 toCf doc =
   CompilerForm {cfCommands =
                   foldMap (\cmd ->
-                             H.singleton (cmdPrimary cmd)
-                                         cmd)
+                             mappend (H.singleton (cmdPrimary cmd)
+                                                  cmd)
+                                     (foldMap (\n -> H.singleton n cmd)
+                                              (cmdAliases cmd)))
                           (definedCommands doc)
                ,cfEnvironments =
                   foldMap (\env ->
-                             H.singleton (envPrimary env)
-                                         env)
+                             mappend (H.singleton (envPrimary env)
+                                                  env)
+                                     (foldMap (\n -> H.singleton n env)
+                                              (envAliases env)))
                           (definedEnvironments doc)
                ,cfDelimiters = delimiters doc
                ,cfParts = docParts doc

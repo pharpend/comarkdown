@@ -4,7 +4,7 @@ Comarkdown is a preprocessor for plain-text documents of any format,
 although it was originally intended for [Pandoc's Markdown][1]. At the moment,
 it's very simple, and not even functional.
 
-\bold-face{txt=Installation}
+\bold-face{Installation}
 
 I recommend you use [Stack][2] to install this. I haven't published a
 version on Hackage yet, so you'll also need [Git][3] to download the
