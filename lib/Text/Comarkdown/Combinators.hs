@@ -32,6 +32,7 @@ import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
+import Control.Lens
 import Control.Monad.State
 import Data.HashMap.Lazy ((!))
 import qualified Data.Vector as V
@@ -47,6 +48,13 @@ infixl 5 <+>
 
 -- * Comarkdown combinators!
 
+-- *** Lenses
+makeLensesFor
+  [("definedCommands","commands")
+  ,("definedEnvironments","environments")
+  ,("docParts","parts")]
+  ''Document
+  
 -- |Parse a String into the current document.
 -- 
 -- The source name is required for error messages
@@ -135,6 +143,4 @@ comment = insertPart . Comment
 
 -- |Insert a 'DocumentPart' into the document
 insertPart :: DocumentPart -> DocumentM ()
-insertPart p =
-  do st <- get
-     put $ st {docParts = V.snoc (docParts st) p}
+insertPart p = parts <>= V.singleton p

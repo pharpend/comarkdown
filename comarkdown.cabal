@@ -34,6 +34,7 @@ library
     OverloadedStrings
     RankNTypes
     Trustworthy
+    TemplateHaskell
   build-depends:
       aeson
     , base ==4.8.*
@@ -43,6 +44,7 @@ library
     , exceptional >=0.3
     , exceptions
     , hashable
+    , lens
     , lens-simple
     , mtl
     , pandoc
