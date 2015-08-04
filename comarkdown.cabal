@@ -70,28 +70,25 @@ test-suite tests
     FlexibleContexts
     FlexibleInstances
     LambdaCase
-    OverloadedLists
     OverloadedStrings
     ScopedTypeVariables
   other-modules:
     CompilerSpec
     ExamplesSpec
     NoFormattingSpec
-    TestTypes
     TypesSpec
   build-depends:
       base
-    , bytestring
     , comarkdown
     , Diff
     , directory
     , hspec
+    , lens
     , mtl
     , pandoc
     , QuickCheck
     , transformers
     , unordered-containers
-    , vector
 
 source-repository head
   type:     git
