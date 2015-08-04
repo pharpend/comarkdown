@@ -32,9 +32,10 @@ import Text.Comarkdown.Parser
 import Text.Comarkdown.Types
 
 import Control.Exceptional
-import Control.Lens
+import Control.Lens hiding (parts)
 import Control.Monad.State
 import Data.HashMap.Lazy ((!))
+import Data.Monoid ((<>))
 import qualified Data.Vector as V
 import Text.Parsec
 import Text.Pandoc
@@ -73,7 +74,7 @@ parse' doc sn bs =
   return .
   \case
     Left parseError -> fail (show parseError)
-    Right parts' -> return (doc {docParts = mappend (docParts doc) parts'})
+    Right parts' -> return (over parts (<> parts') doc)
 
 -- |Parse a file into the current document
 parseFile :: (MonadState Document m, MonadIO m) => FilePath -> m ()
@@ -92,8 +93,7 @@ parseFile' doc fp =
 
 -- |Run the document including the 'stdlib'
 withStdlib :: DocumentM x -> DocumentM x
-withStdlib x = do L.stdlib
-                  x
+withStdlib x = L.stdlib >> x
 
 -- |Wrapper around 'runDocument' and 'stdlib'
 runWithStdlib :: DocumentM x -> IO Pandoc
@@ -116,11 +116,10 @@ comdToPlain fp =
 
 -- |Run a Document, return the resulting Pandoc
 runDocument :: DocumentM x -> IO Pandoc
-runDocument d = do (pd, _) <- runStateT compileD nullDocument
-                   return pd
-  where compileD =
-          do d
-             compile
+runDocument d =
+  do (pd,_) <- runStateT compileD nullDocument
+     return pd
+  where compileD = d >> compile
 
 
 -- -- |Get a list of commands in the current document
