@@ -24,26 +24,20 @@ module Text.Comarkdown.Parser where
 
 import Text.Comarkdown.Types
 
-import Data.Vector (Vector)
-import qualified Data.Vector as V
 import Text.Parsec
 
 -- |Convenient alias for the particular parser monad
 type DocParseM x = ParsecT String Document IO x
 
 -- |Try to parse a bunch of document parts from a ByteString
-documentParser :: DocParseM (Vector DocumentPart)
+documentParser :: DocParseM [DocumentPart]
 documentParser =
   label' "document" $
   do maybeFirst <- optionMaybe interestingPart
-     rest <-
-       sepEndBy (fmap Ignore
-                      (many1 anyChar))
-                interestingPart
-     return (V.fromList
-               (case maybeFirst of
-                  Nothing -> rest
-                  Just fst' -> fst' : rest))
+     rest <- sepEndBy (fmap Ignore (many1 anyChar)) interestingPart
+     return (case maybeFirst of
+               Nothing -> rest
+               Just fst' -> fst' : rest)
 
 -- |Everything but implicit Ignore blocks
 interestingPart :: DocParseM DocumentPart
@@ -112,12 +106,13 @@ commandCall =
      rest <- manyTill anyChar ((space >> pure ()) <|> lookAhead bracketStart')
      let cmdName = fst' : rest
      args' <- many arg
-     return (CommandCall cmdName (V.fromList args'))
-  where arg = do many space
-                 bracketStart'
-                 foo <- manyTill anyChar bracketEnd'
-                 many space
-                 return (Positional foo)
+     return (CommandCall cmdName args')
+  where arg =
+          do many space
+             bracketStart'
+             foo <- manyTill anyChar bracketEnd'
+             many space
+             return (Positional foo)
 
 -- |Parse an explicit ignore block
 explicitIgnore :: DocParseM DocumentPart

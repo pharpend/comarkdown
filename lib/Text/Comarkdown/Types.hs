@@ -36,9 +36,9 @@ import Data.Aeson
 import Data.Default
 import Data.HashMap.Lazy (HashMap)
 import qualified Data.HashMap.Lazy as H
+import Data.List (findIndex)
 import Data.Traversable (for)
-import Data.Vector (Vector, (!?))
-import qualified Data.Vector as V
+import Safe (headMay)
 import Text.Pandoc (Pandoc, readMarkdown, ReaderOptions)
 import Text.Pandoc.Error (PandocError(..))
 
@@ -50,17 +50,17 @@ data CompilerForm =
   CompilerForm {cfCommands :: HashMap CommandName Command
                ,cfEnvironments :: HashMap EnvironmentName Environment
                ,cfDelimiters :: Delimiters
-               ,cfParts :: Vector DocumentPart
+               ,cfParts :: [DocumentPart]
                ,cfUserState :: Value
                ,cfOptions :: ReaderOptions}
 
 -- |The document has a list of definitions, as well as the document up to this
 -- point.
 data Document =
-  Document {definedCommands :: Vector Command
-           ,definedEnvironments :: Vector Environment
+  Document {definedCommands :: [Command]
+           ,definedEnvironments :: [Environment]
            ,delimiters :: Delimiters
-           ,docParts :: Vector DocumentPart
+           ,docParts :: [DocumentPart]
            ,docUserState :: Value
            ,docOptions :: ReaderOptions}
 
@@ -94,7 +94,7 @@ data Command =
   Command   
    {cmdPrimary :: CommandName
     -- ^This should not include the prefix (usually a backslash).
-   ,cmdAliases :: Vector CommandName
+   ,cmdAliases :: [CommandName]
     -- ^Ditto for these
    ,cmdDoc :: DocString
    ,cmdArguments :: Arguments
@@ -107,13 +107,13 @@ data Argument =
            ,argumentDefault :: Maybe String}
   deriving (Eq, Show)
 
-type Arguments = Vector Argument
+type Arguments = [Argument]
 type ArgumentMap = HashMap String String
 
 -- |An environment is a bit more involved
 data Environment =
   Environment {envPrimary :: EnvironmentName
-              ,envAliases :: Vector EnvironmentName
+              ,envAliases :: [EnvironmentName]
               ,envDoc :: DocString
               ,envArguments :: Arguments
                -- |An environment *must* have some input. I.e. it has to do
@@ -142,8 +142,8 @@ instance Default Delimiters where
 data DocumentPart
   = Comment String
   | Ignore String
-  | CommandCall CommandName (Vector MKV)
-  | EnvironmentCall EnvironmentName String (Vector MKV)
+  | CommandCall CommandName [MKV]
+  | EnvironmentCall EnvironmentName String [MKV]
   deriving (Eq, Show)
 
 -- |The type for arguments in function calls. This will later be marshaled into
@@ -158,7 +158,7 @@ type StringFunction = ArgumentMap -> DocumentM Pandoc
 
 -- Marshal a bunch of 'MKV's into an 'ArgumentMap', using the given 'Arguments'
 -- as a reference.
-mkArgMap :: Vector MKV -> Arguments -> Exceptional ArgumentMap
+mkArgMap :: [MKV] -> Arguments -> Exceptional ArgumentMap
 mkArgMap mkvs args' =
   do (result,(_,remainingArguments)) <-
        runStateT (do texts <- traverse mkHashMapEntry mkvs
@@ -174,7 +174,8 @@ mkArgMap mkvs args' =
                   return (H.singleton (argumentName arg)
                                       x))
      return (mappend result (foldMap id rest))
-  where mkHashMapEntry :: MKV -> StateT (Int,Arguments) Exceptional (String,String)
+  where mkHashMapEntry
+          :: MKV -> StateT (Int,Arguments) Exceptional (String,String)
         mkHashMapEntry =
           \case
             -- If we are given a positional argument, consume the leading
@@ -182,7 +183,7 @@ mkArgMap mkvs args' =
             -- then continue.
             Positional value ->
               do (i,args'') <- get
-                 case args'' !? 0 of
+                 case headMay args'' of
                    -- If there aren't any arguments left to consume, then send an error message
                    Nothing ->
                      lift (Failure (mconcat ["Too many positional arguments sent to the function! I got at least "
@@ -190,7 +191,7 @@ mkArgMap mkvs args' =
                                             ," (counting starts at 0)."]))
                    -- If there is an argument, consume it, assign the appropriate KV pair, and increment the counter
                    Just arg ->
-                     do put (i + 1,V.tail args'')
+                     do put (i + 1,tail args'')
                         pure (argumentName arg,value)
             -- If there is a key-value pair, assign the key-value pair. If an
             -- argument with that key happens to be listed in the Arguments,
@@ -204,13 +205,12 @@ mkArgMap mkvs args' =
             --   * This allows the user to specify an argument out-of-position
             WithKey k v ->
               do (i,args'') <- get
-                 case V.findIndex ((== k) . argumentName)
-                                  args'' of
+                 case findIndex ((== k) . argumentName) args'' of
                    Nothing -> return ()
                    Just x ->
                      put (i
-                         ,mappend (V.take x args'')
-                                  (V.drop (x + 1) args''))
+                         ,mappend (take x args'')
+                                  (drop (x + 1) args''))
                  pure (k,v)
 
 -- *** Semantic aliases for 'String'

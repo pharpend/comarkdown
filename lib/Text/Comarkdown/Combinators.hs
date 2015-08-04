@@ -36,7 +36,6 @@ import Control.Lens hiding (parts)
 import Control.Monad.State
 import Data.HashMap.Lazy ((!))
 import Data.Monoid ((<>))
-import qualified Data.Vector as V
 import Text.Parsec
 import Text.Pandoc
 
@@ -49,13 +48,6 @@ infixl 5 <+>
 
 -- * Comarkdown combinators!
 
--- *** Lenses
-makeLensesFor
-  [("definedCommands","commands")
-  ,("definedEnvironments","environments")
-  ,("docParts","parts")]
-  ''Document
-  
 -- |Parse a String into the current document.
 -- 
 -- The source name is required for error messages
@@ -142,4 +134,4 @@ comment = insertPart . Comment
 
 -- |Insert a 'DocumentPart' into the document
 insertPart :: DocumentPart -> DocumentM ()
-insertPart p = parts <>= V.singleton p
+insertPart x = parts <>= [x]
