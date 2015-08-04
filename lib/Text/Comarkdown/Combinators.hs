@@ -65,7 +65,7 @@ parse' doc sn bs =
   return .
   \case
     Left parseError -> fail (show parseError)
-    Right parts -> return (doc {docParts = mappend (docParts doc) parts})
+    Right parts' -> return (doc {docParts = mappend (docParts doc) parts'})
 
 -- |Parse a file into the current document
 parseFile :: (MonadState Document m, MonadIO m) => FilePath -> m ()

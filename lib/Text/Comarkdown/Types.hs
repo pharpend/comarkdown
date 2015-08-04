@@ -39,6 +39,7 @@ import qualified Data.HashMap.Lazy as H
 import Data.Traversable (for)
 import Data.Vector (Vector, (!?))
 import qualified Data.Vector as V
+import Lens.Simple
 import Text.Pandoc (Pandoc, readMarkdown, ReaderOptions)
 import Text.Pandoc.Error (PandocError(..))
 
@@ -63,6 +64,15 @@ data Document =
            ,docParts :: Vector DocumentPart
            ,docUserState :: Value
            ,docOptions :: ReaderOptions}
+
+commands :: Lens' Document (Vector Command)
+commands = lens definedCommands (\l x -> l { definedCommands = x })
+
+environments :: Lens' Document (Vector Environment)
+environments = lens definedEnvironments (\l x -> l { definedEnvironments = x })
+
+parts :: Lens' Document (Vector DocumentPart)
+parts = lens docParts (\l x -> l { docParts = x })
 
 -- |A document containing no definitions or parts, with the default delimiters
 nullDocument :: Document

@@ -43,6 +43,7 @@ library
     , exceptional >=0.3
     , exceptions
     , hashable
+    , lens-simple
     , mtl
     , pandoc
     , parsec
