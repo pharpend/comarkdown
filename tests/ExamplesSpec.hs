@@ -33,25 +33,23 @@ import Text.Comarkdown
 spec :: Spec
 spec =
   parallel $
-  describe "Examples with an input & output file" $
-  do dirPath <- runIO $ makeAbsolute "tests/io-examples/"
-     dirContents <- runIO $ getDirectoryContents dirPath
-     let dirContents' = drop 2 (sort dirContents)
-         inputPaths = filter (isSuffixOf "in.md") dirContents'
-         outputPaths = filter (isSuffixOf "out.md") dirContents'
-     forM_ (zip inputPaths outputPaths) $
-       \(ip,op) ->
-         specify (mconcat ["Compiling ",ip," matches ",op]) $
-         do inputFile <- makeAbsolute (mappend dirPath ip)
-            outputFile <- makeAbsolute (mappend dirPath op)
-            compiledInput <- comdToMd inputFile
-            output <- readFile outputFile
-            compiledInput `shouldBe` output
+    describe "Examples with an input & output file" $ do
+      dirPath <- runIO $ makeAbsolute "tests/io-examples/"
+      dirContents <- runIO $ getDirectoryContents dirPath
+      let dirContents' = drop 2 (sort dirContents)
+          inputPaths = filter (isSuffixOf "in.md") dirContents'
+          outputPaths = filter (isSuffixOf "out.md") dirContents'
+      forM_ (zip inputPaths outputPaths) $
+        \(ip, op) -> specify (mconcat ["Compiling ", ip, " matches ", op]) $ do
+          inputFile <- makeAbsolute (mappend dirPath ip)
+          outputFile <- makeAbsolute (mappend dirPath op)
+          compiledInput <- comdToMd inputFile
+          output <- readFile outputFile
+          compiledInput `shouldBe` output
 
 diffResults :: FilePath -> FilePath -> IO ()
-diffResults inputFile outputFile =
-  do compiledInput <- comdToMd inputFile
-     output <- readFile outputFile
-     let diff = getGroupedDiff (lines compiledInput)
-                               (lines output)
-     putStrLn (ppDiff diff)
+diffResults inputFile outputFile = do
+  compiledInput <- comdToMd inputFile
+  output <- readFile outputFile
+  let diff = getGroupedDiff (lines compiledInput) (lines output)
+  putStrLn (ppDiff diff)

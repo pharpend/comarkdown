@@ -29,29 +29,29 @@ import Test.Hspec
 import Text.Comarkdown
 
 spec :: Spec
-spec =
-  parallel $
+spec = parallel $
   describe "Parsing plain (i.e. no-comarkdown) documents" $
-  describe "If a document has no comarkdown-specific formatting, running it through the comarkdown preprocessor should not change it" $
-  do it "holds with the README" $
-       do readmePath <- makeAbsolute "README.md"
+    describe
+      "If a document has no comarkdown-specific formatting, running it through the comarkdown preprocessor should not change it" $
+      do
+        it "holds with the README" $ do
+          readmePath <- makeAbsolute "README.md"
           comdResult <- comdToMd readmePath
           pdResult <- runPd readmePath
           comdResult `shouldBe` pdResult
-     describe "example files" $
-       do dirPath <- runIO $ makeAbsolute "tests/no-formatting-examples/"
+        describe "example files" $ do
+          dirPath <- runIO $ makeAbsolute "tests/no-formatting-examples/"
           dirContents <- runIO $ getDirectoryContents dirPath
           let dirContents' = drop 2 (sort dirContents)
           forM_ dirContents' $
-              \fp ->
-              specify fp $
-              do fp' <- makeAbsolute (mappend dirPath fp)
-                 comd' <- comdToMd fp'
-                 pd' <- runPd fp'
-                 comd' `shouldBe` pd'
+            \fp -> specify fp $ do
+              fp' <- makeAbsolute (mappend dirPath fp)
+              comd' <- comdToMd fp'
+              pd' <- runPd fp'
+              comd' `shouldBe` pd'
 
 runPd :: FilePath -> IO String
-runPd fp =
-  do fileContents <- readFile fp
-     let Right pandoc = readMarkdown def fileContents
-     return (writeMarkdown def pandoc)
+runPd fp = do
+  fileContents <- readFile fp
+  let Right pandoc = readMarkdown def fileContents
+  return (writeMarkdown def pandoc)
