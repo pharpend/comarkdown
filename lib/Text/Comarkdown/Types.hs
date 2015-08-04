@@ -91,10 +91,11 @@ toCf doc =
 
 -- |A command has a list of keywords, along with documentation.
 data Command =
-  Command   -- |This should not include the prefix (usually a backslash).
+  Command   
    {cmdPrimary :: CommandName
-    -- |Ditto for these
+    -- ^This should not include the prefix (usually a backslash).
    ,cmdAliases :: Vector CommandName
+    -- ^Ditto for these
    ,cmdDoc :: DocString
    ,cmdArguments :: Arguments
    ,cmdFunction :: StringFunction}
